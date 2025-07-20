@@ -1,4 +1,4 @@
-# 🌾 AgriTech Smart Bidding Platform v6.0.0
+# 🌾 AgriTech Smart Bidding Platform v1.0.0
 
 ![FastAPI Platform](https://github.com/kayprogrammer/bidout-auction-v6/blob/main/display/fastapi.png?raw=true)
 
