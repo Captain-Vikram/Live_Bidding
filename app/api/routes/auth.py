@@ -12,6 +12,8 @@ from app.api.schemas.auth import (
     RefreshTokensSchema,
     RegisterResponseSchema,
     TokensResponseSchema,
+    KYCVerificationSchema,
+    KYCResponseSchema,
 )
 from app.common.exception_handlers import RequestError
 from app.api.schemas.base import ResponseSchema
@@ -252,3 +254,42 @@ async def logout(
 ) -> ResponseSchema:
     await jwt_manager.delete_by_user_id(db, user.id)
     return {"message": "Logout successful"}
+
+
+@router.post(
+    "/verify-kyc/{user_id}",
+    summary="Verify User KYC",
+    description="This endpoint allows admins to verify a user's KYC status",
+    status_code=200,
+)
+async def verify_kyc(
+    user_id: str,
+    data: KYCVerificationSchema,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+) -> KYCResponseSchema:
+    # Check if current user is admin or superuser
+    if not (current_user.is_superuser or current_user.is_staff):
+        raise RequestError(
+            err_msg="Insufficient permissions",
+            status_code=403,
+            data={"detail": "Only admins can verify KYC"}
+        )
+    
+    # Find the user to verify
+    user_to_verify = await user_manager.get_by_id(db, user_id)
+    if not user_to_verify:
+        raise RequestError(
+            err_msg="User not found",
+            status_code=404,
+            data={"detail": "User with this ID does not exist"}
+        )
+    
+    # Update KYC status
+    await user_manager.verify_kyc(db, user_id, data.is_verified)
+    
+    status = "verified" if data.is_verified else "unverified"
+    return {
+        "message": f"User KYC status updated to {status}",
+        "data": {"user_id": user_id, "is_verified": data.is_verified}
+    }

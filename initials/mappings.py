@@ -10,10 +10,14 @@ listing_mappings = [
 
 # names must be unique
 category_mappings = [
-    {"name": "Technology", "slug": "technology"},
-    {"name": "Accessories", "slug": "accessories"},
-    {"name": "Automobile", "slug": "automobile"},
-    {"name": "Fashion", "slug": "fashion"},
+    {"name": "Crops & Grains", "slug": "crops-grains"},
+    {"name": "Livestock & Poultry", "slug": "livestock-poultry"},
+    {"name": "Dairy Products", "slug": "dairy-products"},
+    {"name": "Fruits & Vegetables", "slug": "fruits-vegetables"},
+    {"name": "Seeds & Fertilizers", "slug": "seeds-fertilizers"},
+    {"name": "Farm Equipment", "slug": "farm-equipment"},
+    {"name": "Organic Products", "slug": "organic-products"},
+    {"name": "Processed Foods", "slug": "processed-foods"},
 ]
 
 file_mappings = [{"resource_type": "image/png"} for i in range(6)]

@@ -28,6 +28,13 @@ class UserManager(BaseManager[User]):
             obj_in["password"] = get_password_hash(password)
         user = await super().update(db, db_obj, obj_in)
         return user
+    
+    async def verify_kyc(self, db: AsyncSession, user_id: UUID, is_verified: bool = True) -> Optional[User]:
+        """Verify or unverify a user's KYC status"""
+        user = await self.get_by_id(db, user_id)
+        if user:
+            return await self.update(db, user, {"is_verified": is_verified})
+        return None
 
 
 class OtpManager(BaseManager[Otp]):

@@ -36,9 +36,9 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_EMAIL: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 
-    # FIRST AUCTIONEER
-    FIRST_AUCTIONEER_EMAIL: EmailStr
-    FIRST_AUCTIONEER_PASSWORD: str
+    # FIRST SELLER
+    FIRST_SELLER_EMAIL: EmailStr
+    FIRST_SELLER_PASSWORD: str
 
     # FIRST REVIEWER
     FIRST_REVIEWER_EMAIL: EmailStr
@@ -56,10 +56,47 @@ class Settings(BaseSettings):
     TEMPLATE_FOLDER: Optional[str] = f"{PROJECT_DIR}/app/templates"
 
     EMAIL_CONFIG: Optional[ConnectionConfig] = None
+    
+    # SMS CONFIG (Twilio)
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
+    TWILIO_PHONE_NUMBER: Optional[str] = None
+    SMS_ENABLED: bool = False
+    
+    # ADMIN CONTACT INFO (for notifications and testing)
+    ADMIN_PHONE_NUMBER: Optional[str] = None
+    ADMIN_EMAIL: Optional[str] = None
+    DEVELOPER_EMAIL: Optional[str] = None
+    
     # CLOUDINARY CONFIG
     CLOUDINARY_CLOUD_NAME: str
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
+    
+    # REDIS CONFIG
+    REDIS_URL: str = "redis://localhost:6379/0"
+    
+    # CELERY CONFIG
+    CELERY_BROKER_URL: str = "redis://localhost:6379/1"
+    CELERY_RESULT_BACKEND: str = "redis://localhost:6379/2"
+    
+    # PHASE 5: Price History and Alerts Configuration
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: Optional[str] = None
+    
+    # Price tracking configuration
+    PRICE_GENERATION_ENABLED: bool = True
+    PRICE_VOLATILITY_FACTOR: float = 0.1  # 10% max daily price change
+    
+    # Alert configuration
+    ALERT_CHECK_INTERVAL_MINUTES: int = 30
+    MAX_ALERTS_PER_USER_PER_DAY: int = 10
+    
+    # On-site notification configuration
+    ONSITE_NOTIFICATION_RETENTION_DAYS: int = 30
+    MAX_ONSITE_NOTIFICATIONS_PER_USER: int = 100
 
     @validator("SQLALCHEMY_DATABASE_URL", pre=True)
     def assemble_postgres_connection(

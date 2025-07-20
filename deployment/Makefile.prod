@@ -1,0 +1,82 @@
+# Production Deployment Makefile
+
+.PHONY: help build deploy start stop restart logs backup restore clean
+
+help:
+	@echo "Available commands:"
+	@echo "  build     - Build production images"
+	@echo "  deploy    - Deploy to production"
+	@echo "  start     - Start all services"
+	@echo "  stop      - Stop all services"
+	@echo "  restart   - Restart all services"
+	@echo "  logs      - View application logs"
+	@echo "  backup    - Create database backup"
+	@echo "  restore   - Restore database from backup"
+	@echo "  clean     - Clean up unused images and volumes"
+
+build:
+	docker-compose -f docker-compose.prod.yml build --no-cache
+
+deploy:
+	@echo "Deploying AgriTech Platform..."
+	docker-compose -f docker-compose.prod.yml up -d
+	@echo "Waiting for services to start..."
+	sleep 30
+	@echo "Running database migrations..."
+	docker-compose -f docker-compose.prod.yml exec web alembic upgrade head
+	@echo "Deployment complete!"
+
+start:
+	docker-compose -f docker-compose.prod.yml up -d
+
+stop:
+	docker-compose -f docker-compose.prod.yml down
+
+restart:
+	docker-compose -f docker-compose.prod.yml restart
+
+logs:
+	docker-compose -f docker-compose.prod.yml logs -f web
+
+logs-celery:
+	docker-compose -f docker-compose.prod.yml logs -f celery_worker
+
+logs-db:
+	docker-compose -f docker-compose.prod.yml logs -f db
+
+backup:
+	@echo "Creating database backup..."
+	docker-compose -f docker-compose.prod.yml exec db pg_dump -U agritech_user agritech_prod > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
+	@echo "Backup created in backups/ directory"
+
+restore:
+	@echo "Available backups:"
+	@ls -la backups/*.sql
+	@read -p "Enter backup filename: " backup_file; \
+	docker-compose -f docker-compose.prod.yml exec -T db psql -U agritech_user -d agritech_prod < backups/$$backup_file
+
+clean:
+	docker system prune -f
+	docker volume prune -f
+
+health-check:
+	@echo "Checking service health..."
+	curl -f http://localhost/api/v1/general/health || echo "API health check failed"
+	docker-compose -f docker-compose.prod.yml ps
+
+ssl-setup:
+	@echo "Setting up SSL certificates with Let's Encrypt..."
+	docker run --rm -v $(PWD)/ssl:/etc/letsencrypt certbot/certbot certonly --standalone -d $(DOMAIN_NAME) -d www.$(DOMAIN_NAME)
+
+ssl-renew:
+	@echo "Renewing SSL certificates..."
+	docker run --rm -v $(PWD)/ssl:/etc/letsencrypt certbot/certbot renew
+
+migrate:
+	docker-compose -f docker-compose.prod.yml exec web alembic upgrade head
+
+shell:
+	docker-compose -f docker-compose.prod.yml exec web bash
+
+db-shell:
+	docker-compose -f docker-compose.prod.yml exec db psql -U agritech_user -d agritech_prod

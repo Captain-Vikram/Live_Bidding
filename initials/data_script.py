@@ -46,13 +46,13 @@ class CreateData(object):
 
     async def create_auctioneer(self, db: AsyncSession) -> None:
         auctioneer = await user_manager.get_by_email(
-            db, settings.FIRST_AUCTIONEER_EMAIL
+            db, settings.FIRST_SELLER_EMAIL
         )
         user_dict = {
             "first_name": "Test",
-            "last_name": "Auctioneer",
-            "email": settings.FIRST_AUCTIONEER_EMAIL,
-            "password": settings.FIRST_AUCTIONEER_PASSWORD,
+            "last_name": "Seller",
+            "email": settings.FIRST_SELLER_EMAIL,
+            "password": settings.FIRST_SELLER_PASSWORD,
             "is_email_verified": True,
         }
         if not auctioneer:

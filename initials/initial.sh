@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 # Initialize database
 python initials/db_starter.py
@@ -13,4 +13,4 @@ python initials/initial_data.py
 # pytest --verbose --disable-warnings -vv -x --timeout=10
 
 # Start application
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload 
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

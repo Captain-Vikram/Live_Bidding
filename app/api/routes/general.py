@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.schemas.general import (
     SubscriberSchema,
@@ -13,6 +13,8 @@ from app.db.managers.general import (
     subscriber_manager,
     review_manager,
 )
+from app.db.managers.base import file_manager
+from app.api.utils.file_types import ALLOWED_IMAGE_TYPES
 
 router = APIRouter()
 
@@ -54,3 +56,54 @@ async def subscribe(
 async def reviews(db: AsyncSession = Depends(get_db)) -> ReviewsResponseSchema:
     reviews = await review_manager.get_active(db)
     return {"message": "Reviews fetched", "data": reviews}
+
+
+@router.post(
+    "/upload-image",
+    summary="Upload image file",
+    description="Upload an image file and get the file ID for use in listings or profile. Supports JPEG, PNG, WEBP formats.",
+    status_code=201,
+)
+async def upload_image(
+    file: UploadFile = File(..., description="Image file to upload"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload an image file and return the file ID"""
+    
+    # Validate file type
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"File type {file.content_type} not allowed. Supported types: {', '.join(ALLOWED_IMAGE_TYPES)}"
+        )
+    
+    # Validate file size (max 5MB)
+    max_size = 5 * 1024 * 1024  # 5MB
+    file_content = await file.read()
+    if len(file_content) > max_size:
+        raise HTTPException(
+            status_code=400,
+            detail="File size too large. Maximum allowed size is 5MB."
+        )
+    
+    # Reset file pointer for potential future reading
+    await file.seek(0)
+    
+    # Create file record in database
+    file_data = {
+        "resource_type": file.content_type,
+        "filename": file.filename,
+        "size": len(file_content)
+    }
+    
+    db_file = await file_manager.create(db, file_data)
+    
+    return {
+        "message": "Image uploaded successfully",
+        "data": {
+            "file_id": db_file.id,
+            "filename": file.filename,
+            "content_type": file.content_type,
+            "size": len(file_content)
+        }
+    }

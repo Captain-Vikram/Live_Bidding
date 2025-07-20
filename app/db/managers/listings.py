@@ -4,10 +4,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.managers.base import BaseManager
 from app.db.models.listings import Category, Listing, WatchList, Bid
-from app.api.utils.auth import Authentication
 
 from uuid import UUID
 from slugify import slugify
+import random
+import string
+
+
+def get_random_string(length: int) -> str:
+    """Generate random string of given length"""
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
 
 class CategoryManager(BaseManager[Category]):
@@ -32,7 +38,7 @@ class CategoryManager(BaseManager[Category]):
         obj_in["slug"] = slug
         slug_exists = await self.get_by_slug(db, slug)
         if slug_exists:
-            random_str = Authentication.get_random(4)
+            random_str = get_random_string(4)
             obj_in["slug"] = f"{created_slug}-{random_str}"
             return await self.create(db, obj_in)
 
@@ -118,7 +124,7 @@ class ListingManager(BaseManager[Listing]):
         obj_in["slug"] = slug
         slug_exists = await self.get_by_slug(db, slug)
         if slug_exists:
-            random_str = Authentication.get_random(4)
+            random_str = get_random_string(4)
             obj_in["slug"] = f"{created_slug}-{random_str}"
             return await self.create(db, obj_in)
 
@@ -134,7 +140,7 @@ class ListingManager(BaseManager[Listing]):
             obj_in["slug"] = slug
             slug_exists = await self.get_by_slug(db, slug)
             if slug_exists and not slug == db_obj.slug:
-                random_str = Authentication.get_random(4)
+                random_str = get_random_string(4)
                 obj_in["slug"] = f"{created_slug}-{random_str}"
                 return await self.update(db, db_obj, obj_in)
 

@@ -35,6 +35,21 @@ async def get_current_user(
     return user
 
 
+async def get_optional_user(
+    token: Optional[HTTPAuthorizationCredentials] = Depends(jwt_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[User]:
+    """Get current user if authenticated, otherwise return None"""
+    if not token:
+        return None
+    
+    try:
+        user = await Authentication.decodeAuthorization(db, token.credentials)
+        return user
+    except Exception:
+        return None
+
+
 async def get_client(
     token: Optional[HTTPAuthorizationCredentials] = Depends(jwt_scheme),
     guest_id: Optional[str] = Depends(guest_scheme),
