@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, listings, general, seller, bidding, websocket, price_tracking, mobile
+from app.api.routes import (
+    auth, listings, general, seller, bidding, websocket, 
+    price_tracking, mobile, notifications, commodities, 
+    admin, auctioneer, recommendations
+)
 from app.api.routers import main_router
 from app.common.exception_handlers import exc_handlers
 from app.core.config import settings
@@ -22,8 +26,8 @@ app = FastAPI(
     exception_handlers=exc_handlers,
 )
 
-# Setup security middleware with enhanced protection (temporarily disabled for startup)
-# app = setup_security_middleware(app)
+# Setup security middleware with enhanced protection
+app = setup_security_middleware(app)
 
 # Set all CORS enabled origins
 app.add_middleware(

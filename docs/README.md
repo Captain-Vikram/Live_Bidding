@@ -1,259 +1,103 @@
-# 📚 AgriTech Platform Documentation
+# 📚 AgriTech Platform Documentation Hub
 
-Welcome to the comprehensive documentation for the **AgriTech Smart Bidding Platform v6.0.0**. This folder contains all the essential documentation for understanding, deploying, and using the platform.
-
----
+Welcome to the comprehensive documentation for the **AgriTech Smart Bidding Platform**. This directory contains all the technical documentation, guides, and references needed for development, deployment, and maintenance.
 
 ## 📋 **Documentation Index**
 
 ### 🚀 **Getting Started**
-- **[SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md)** - Complete guide to starting the platform
-  - Docker Desktop method (recommended)
-  - Command line setup
-  - Development setup
-  - Troubleshooting guide
+- **[Server Startup Guide](./SERVER_STARTUP_GUIDE.md)** - Complete setup and startup instructions
+- **[Quick Reference](./QUICK_REFERENCE.md)** - Essential commands and troubleshooting
+- **[Environment Setup](./ENVIRONMENT_SETUP.md)** - Development environment configuration
 
-### 📊 **Project Status**
-- **[PHASE_7_COMPLETION_REPORT.md](./PHASE_7_COMPLETION_REPORT.md)** - Phase 7 implementation status
-  - Security framework implementation
-  - Comprehensive testing suite
-  - API documentation completion
-  - Production deployment configuration
+### 🏗️ **Architecture & Design**
+- **[System Architecture](./SYSTEM_ARCHITECTURE.md)** - High-level system design and components
+- **[Database Schema](./DATABASE_SCHEMA.md)** - Complete database structure and relationships
+- **[API Documentation](./API_DOCUMENTATION.md)** - REST API endpoints and usage
+
+### 🔧 **Development**
+- **[Development Guide](./DEVELOPMENT_GUIDE.md)** - Code standards and development workflow
+- **[Testing Guide](./TESTING_GUIDE.md)** - Testing strategies and test writing
+- **[Frontend Integration](./FRONTEND_INTEGRATION.md)** - Frontend development guide
 
 ### 🐳 **Deployment**
-- **[DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)** - Docker deployment summary
-  - Container configuration
-  - Technical issues resolved
-  - Access points and URLs
-  - Performance metrics
+- **[Deployment Guide](./DEPLOYMENT_GUIDE.md)** - Production deployment instructions
+- **[Docker Configuration](./DOCKER_GUIDE.md)** - Container setup and management
+- **[Security Guide](./SECURITY_GUIDE.md)** - Security measures and best practices
 
-### 🏗️ **Architecture**
-- **[ARCHITECTURE_DIAGRAMS.md](./ARCHITECTURE_DIAGRAMS.md)** - System architecture
-  - API endpoints structure
-  - Database relationships
-  - Feature flow diagrams
-  - Implementation status
+### 🤖 **AI/ML Features**
+- **[ML Recommendations](./ML_RECOMMENDATIONS.md)** - Machine learning features and usage
+- **[Price Prediction](./PRICE_PREDICTION.md)** - Price forecasting system
+- **[Auto Bidding](./AUTO_BIDDING.md)** - Automated bidding system
 
-### 📡 **API Reference**
-- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - Complete API documentation
-  - 15 documented endpoints
-  - Request/response schemas
-  - Authentication requirements
-  - Usage examples
-- **[API_SCHEMA.json](./API_SCHEMA.json)** - Machine-readable API schema
-  - OpenAPI specification
-  - Endpoint definitions
-  - Error codes and responses
+### 📱 **Mobile & Notifications**
+- **[Mobile Integration](./MOBILE_INTEGRATION.md)** - Mobile app integration guide
+- **[Notification System](./NOTIFICATION_SYSTEM.md)** - Push notifications and alerts
 
 ---
 
 ## 🎯 **Quick Navigation**
 
 ### **For Developers**
-1. Start here: [SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md)
-2. API reference: [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
-3. Architecture: [ARCHITECTURE_DIAGRAMS.md](./ARCHITECTURE_DIAGRAMS.md)
-
-### **For DevOps/Deployment**
-1. Deployment: [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)
-2. Architecture: [ARCHITECTURE_DIAGRAMS.md](./ARCHITECTURE_DIAGRAMS.md)
-3. Startup guide: [SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md)
-
-### **For Project Managers**
-1. Project status: [PHASE_7_COMPLETION_REPORT.md](./PHASE_7_COMPLETION_REPORT.md)
-2. Deployment status: [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)
-3. API capabilities: [API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
-
----
-
-## 🌐 **Platform Overview**
-
-### **What is AgriTech Platform?**
-A comprehensive auction and commodity trading platform designed specifically for agricultural markets, featuring:
-
-- **🌾 Commodity Trading**: Buy and sell agricultural products
-- **⚡ Real-time Bidding**: Live auction system with WebSocket support
-- **🤖 ML Recommendations**: AI-powered trading suggestions
-- **📊 Price Tracking**: Historical data and price alerts
-- **📱 Mobile Integration**: Push notifications and device management
-- **🔐 Enterprise Security**: Advanced authentication and audit logging
-
-### **Current Status**
-- **Version**: 6.0.0
-- **Phase**: 7 (Security and Testing) - ✅ **COMPLETE**
-- **Deployment**: ✅ **Production Ready**
-- **Docker**: ✅ **Fully Containerized**
-- **API**: ✅ **15 Endpoints Documented**
-- **Testing**: ✅ **Comprehensive Test Suite**
-
----
-
-## 🚀 **Quick Start**
-
-### **1. Start the Platform (Recommended)**
-```bash
-# Using Docker Desktop (Simplest)
-1. Open Docker Desktop
-2. Find "bidout-auction-v6" project
-3. Click "Start"
-4. Open http://localhost:8000/docs
+```
+1. Start here: SERVER_STARTUP_GUIDE.md
+2. Understand: DATABASE_SCHEMA.md
+3. Code with: DEVELOPMENT_GUIDE.md
+4. Test with: TESTING_GUIDE.md
 ```
 
-### **2. Access Main URLs**
+### **For Frontend Developers**
 ```
-✅ API Documentation: http://localhost:8000/docs
-✅ Health Check: http://localhost:8000/api/v6/healthcheck
-✅ Database Admin: http://localhost:5050
-✅ Welcome Page: http://localhost:8000/
+1. Database: DATABASE_SCHEMA.md
+2. APIs: API_DOCUMENTATION.md
+3. Integration: FRONTEND_INTEGRATION.md
+4. Mobile: MOBILE_INTEGRATION.md
 ```
 
-### **3. Test Basic Functionality**
-```bash
-# Test health endpoint
-curl http://localhost:8000/api/v6/healthcheck
-
-# Expected response: {"success":"pong!"}
+### **For DevOps**
+```
+1. Deploy: DEPLOYMENT_GUIDE.md
+2. Monitor: DOCKER_GUIDE.md
+3. Secure: SECURITY_GUIDE.md
 ```
 
 ---
 
-## 📊 **Features Overview**
+## 🏷️ **Project Overview**
 
-### **Core Features Implemented**
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **User Authentication** | ✅ Complete | JWT-based auth with roles |
-| **Commodity Listings** | ✅ Complete | Create and manage agricultural listings |
-| **Real-time Bidding** | ✅ Complete | WebSocket-based live bidding |
-| **Price Tracking** | ✅ Complete | Historical data and alerts |
-| **ML Recommendations** | ✅ Complete | AI-powered trading suggestions |
-| **Mobile Integration** | ✅ Complete | Push notifications and device registration |
-| **Admin Functions** | ✅ Complete | KYC verification and user management |
-| **Security Framework** | ✅ Complete | Rate limiting, audit logging, input sanitization |
-| **Testing Suite** | ✅ Complete | 100% endpoint coverage |
-| **API Documentation** | ✅ Complete | Interactive Swagger UI |
+**AgriTech Smart Bidding Platform** is a comprehensive auction and commodity trading platform designed specifically for agricultural markets. 
 
-### **Security Features**
-- **Rate Limiting**: 60 requests/minute, 1000/hour
-- **Account Lockout**: 5 failed attempts = 30-minute lockout
-- **Input Sanitization**: XSS and SQL injection protection
-- **Audit Logging**: Comprehensive security event tracking
-- **JWT Security**: Short-lived tokens with refresh mechanism
+### **Core Features**
+- 🔐 **KYC-verified Authentication** - Secure user verification system
+- 🏠 **Real-time Bidding** - WebSocket-powered live auctions
+- 📸 **Image Upload** - Cloud-based commodity image management
+- 📊 **Price Tracking** - Historical price analysis and alerts
+- 🤖 **ML Recommendations** - AI-powered trading suggestions
+- 📱 **Mobile Support** - Push notifications and mobile optimization
+- 🛡️ **Enterprise Security** - Rate limiting, audit logging, encryption
 
-### **Performance Features**
-- **Response Times**: < 50ms health check, < 500ms API endpoints
-- **Caching**: Redis-based caching for frequent queries
-- **Database**: PostgreSQL with connection pooling
-- **Scalability**: Horizontal scaling ready with load balancer support
-
----
-
-## 🔧 **Development Workflow**
-
-### **Container Management**
-```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs api
-
-# Stop services
-docker-compose down
-
-# Rebuild
-docker-compose up --build -d
-```
-
-### **Database Management**
-```bash
-# Access database via pgAdmin
-http://localhost:5050
-# Email: pgadmin4@pgadmin.org
-# Password: admin
-
-# Direct database access
-docker exec -it bidout-auction-v6-db-1 psql -U postgres
-```
-
-### **Testing**
-```bash
-# Run all tests
-docker exec -it bidout-auction-v6-api-1 pytest -v
-
-# Run specific test module
-pytest app/api/tests/test_auth.py -v
-```
-
----
-
-## 📈 **Monitoring & Health**
-
-### **Health Checks**
-- **API Health**: http://localhost:8000/api/v6/healthcheck
-- **Container Status**: `docker ps` (all should show "healthy")
-- **Service Logs**: `docker-compose logs [service-name]`
-
-### **Performance Monitoring**
-- **Database**: pgAdmin interface for query performance
-- **Redis**: Monitor cache hit rates and memory usage
-- **API**: Response time tracking and error rate monitoring
-
----
-
-## 🎯 **Next Steps**
-
-### **For Development**
-1. Read [SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md) for setup
-2. Explore [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for endpoints
-3. Review [ARCHITECTURE_DIAGRAMS.md](./ARCHITECTURE_DIAGRAMS.md) for system design
-
-### **For Production**
-1. Follow [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md) for deployment
-2. Configure SSL/TLS and domain names
-3. Set up monitoring and backup systems
-4. Review security configurations
-
-### **For Testing**
-1. Use interactive API docs at `/docs`
-2. Run test suite with `pytest`
-3. Test WebSocket connections for real-time features
-4. Verify security features and rate limiting
+### **Tech Stack**
+- **Backend**: FastAPI + Python 3.13
+- **Database**: PostgreSQL + Redis
+- **ML/AI**: Scikit-learn + Prophet
+- **Real-time**: WebSockets + Celery
+- **Deployment**: Docker + Docker Compose
+- **Testing**: Pytest + Coverage
 
 ---
 
 ## 📞 **Support & Resources**
 
-### **Documentation Issues**
-If you find any issues with the documentation:
-1. Check the specific guide you're following
-2. Look at troubleshooting sections
-3. Verify your environment meets prerequisites
-4. Test with debug mode: `python start_server.py --debug`
-
-### **Platform Issues**
-For platform-related issues:
-1. Check container logs: `docker-compose logs`
-2. Verify health endpoint: `/api/v6/healthcheck`
-3. Review error responses in API documentation
-4. Use pgAdmin to check database connectivity
-
-### **Additional Resources**
-- **Interactive API Testing**: Available at `/docs` when server is running
-- **Database Schema**: Accessible via pgAdmin interface
-- **Container Monitoring**: Docker Desktop provides resource usage statistics
+- **Issues**: Check specific documentation files for troubleshooting
+- **API Testing**: Use `/docs` endpoint for interactive API testing
+- **Health Check**: Visit `/api/v6/healthcheck` for system status
+- **Redis Health**: Visit `/api/v6/redis-health` for Redis connectivity
 
 ---
 
-## 📅 **Document Information**
+## 🔄 **Documentation Updates**
 
-- **Last Updated**: July 20, 2025
-- **Platform Version**: 6.0.0
-- **Documentation Version**: 7.0
-- **Status**: Production Ready
+This documentation is maintained alongside the codebase. When making changes to the platform, please update the relevant documentation files to keep them current.
 
----
-
-**🌾 Welcome to the AgriTech Platform Documentation!**
-
-Start with the [SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md) to get your platform running in minutes.
+**Last Updated**: July 20, 2025  
+**Platform Version**: 6.0.0  
+**Phase**: 7 (Complete)

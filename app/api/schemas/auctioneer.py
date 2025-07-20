@@ -20,9 +20,6 @@ class CreateListingSchema(BaseModel):
     price: Decimal = Field(..., example=1000.00, decimal_places=2)
     closing_date: datetime
     file_type: str = Field(..., example="image/jpeg")
-    
-    # Add image_id field for database relationship
-    image_id: UUID = Field(..., example="123e4567-e89b-12d3-a456-426614174000", description="UUID of uploaded product image file (required)")
 
     @validator("closing_date")
     def validate_closing_date(cls, v):
