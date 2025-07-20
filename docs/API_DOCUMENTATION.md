@@ -1,43 +1,106 @@
-# 📡 API Documentation
+# AgriTech Platform API Documentation
 
-## 🌐 **AgriTech Platform REST API**
+## Overview
+Complete API documentation for the AgriTech Smart Bidding Platform with ML-powered recommendations.
 
-Complete API documentation for the AgriTech Smart Bidding Platform. This RESTful API provides endpoints for user management, commodity trading, real-time bidding, and ML-powered recommendations.
+**Base URL**: `http://localhost:8000`
+**API Version**: `v6.0.0`
+**Authentication**: Bearer Token (JWT)
+
+## Authentication
+Most endpoints require authentication via JWT token in the Authorization header:
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+## Response Format
+All API responses follow this standard format:
+```json
+{
+  "message": "Success message",
+  "data": {
+    // Response data
+  }
+}
+```
+
+## Error Responses
+Error responses include HTTP status codes and descriptive messages:
+```json
+{
+  "detail": "Error description",
+  "error_code": "ERROR_TYPE"
+}
+```
+
+## Rate Limiting
+- 60 requests per minute per IP
+- 1000 requests per hour per IP
+- Rate limit headers included in responses
 
 ---
 
-## 🔗 **Base URL & Interactive Documentation**
+## Authentication
 
-**Base URL**: `http://localhost:8000/api/v6`  
-**Interactive Docs**: `http://localhost:8000/docs` (Swagger UI)  
-**Alternative Docs**: `http://localhost:8000/redoc` (ReDoc)  
+### POST /api/v1/auth/register
 
----
+**User Registration**
 
-## 🔐 **Authentication**
+Register a new user with role-based access (farmer, trader, admin)
 
-### **Authentication Methods**
+**Authentication**: Not required
 
-1. **JWT Bearer Token** (Registered Users)
-```http
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-2. **Guest User ID** (Anonymous Users)
-```http
-guestuserid: 550e8400-e29b-41d4-a716-446655440000
-```
-
-### **Getting Authentication Tokens**
-
-**Login Request**:
-```http
-POST /api/v6/auth/login
-Content-Type: application/json
-
+**Request Body**:
+```json
 {
   "email": "farmer@agritech.com",
-  "password": "securePassword123"
+  "password": "SecurePass123!",
+  "first_name": "John",
+  "last_name": "Farmer",
+  "role": "farmer",
+  "terms_agreement": true,
+  "upi_id": "john@paytm",
+  "bank_account": "1234567890123456",
+  "ifsc_code": "HDFC0001234"
+}
+```
+
+**Response**:
+```json
+{
+  "message": "Registration successful",
+  "data": {
+    "user": {
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "email": "farmer@agritech.com",
+      "first_name": "John",
+      "last_name": "Farmer",
+      "role": "farmer",
+      "is_verified": false
+    }
+  }
+}
+```
+
+**Error Codes**:
+- `400`: Validation error or email already exists
+- `422`: Invalid input data format
+
+---
+
+### POST /api/v1/auth/login
+
+**User Login**
+
+Authenticate user and receive access tokens
+
+**Authentication**: Not required
+
+**Request Body**:
+```json
+{
+  "email": "farmer@agritech.com",
+  "password": "SecurePass123!"
 }
 ```
 
@@ -46,290 +109,152 @@ Content-Type: application/json
 {
   "message": "Login successful",
   "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer",
     "user": {
       "id": "123e4567-e89b-12d3-a456-426614174000",
       "email": "farmer@agritech.com",
-      "first_name": "John",
-      "last_name": "Farmer",
-      "role": "FARMER",
+      "role": "farmer",
       "is_verified": true
-    },
-    "access_token": "eyJhbGciOiJIUzI1NiIs...",
-    "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
-    "token_type": "bearer"
+    }
   }
 }
 ```
 
----
-
-## 👥 **Authentication Endpoints**
-
-### **POST /auth/register**
-Register a new user account
-
-**Request Body**:
-```json
-{
-  "email": "newuser@example.com",
-  "password": "SecurePass123",
-  "first_name": "John",
-  "last_name": "Doe",
-  "role": "FARMER",
-  "terms_agreement": true
-}
-```
-
-**Response** (201 Created):
-```json
-{
-  "message": "Registration successful. Please verify your email.",
-  "data": {
-    "user_id": "123e4567-e89b-12d3-a456-426614174000",
-    "email": "newuser@example.com",
-    "verification_sent": true
-  }
-}
-```
-
-### **POST /auth/verify-email**
-Verify email with OTP
-
-**Request Body**:
-```json
-{
-  "email": "newuser@example.com",
-  "otp": 123456
-}
-```
-
-### **POST /auth/login**
-User login
-
-### **POST /auth/refresh-token**
-Refresh JWT token
-
-**Request Body**:
-```json
-{
-  "refresh_token": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
-
-### **POST /auth/logout**
-User logout (requires authentication)
-
-### **POST /auth/forgot-password**
-Initiate password reset
-
-**Request Body**:
-```json
-{
-  "email": "user@example.com"
-}
-```
-
-### **POST /auth/reset-password**
-Reset password with OTP
-
-**Request Body**:
-```json
-{
-  "email": "user@example.com",
-  "otp": 123456,
-  "new_password": "NewSecurePass123"
-}
-```
+**Error Codes**:
+- `400`: Invalid credentials
+- `429`: Too many login attempts
 
 ---
 
-## 🏠 **Listings & Commodities**
+### POST /api/v1/auth/reset-password
 
-### **GET /listings**
-Get all commodity listings with filtering
+**Password Reset Request**
 
-**Query Parameters**:
-- `category_id` (UUID): Filter by category
-- `search` (string): Search in name/description
-- `min_price` (decimal): Minimum price filter
-- `max_price` (decimal): Maximum price filter
-- `status` (string): active, closed, all
-- `location` (string): Filter by location
-- `quality_grade` (string): A, B, C, PREMIUM
-- `page` (int): Page number (default: 1)
-- `size` (int): Items per page (default: 50)
-- `sort` (string): price_asc, price_desc, date_asc, date_desc
+Request password reset via email
+
+**Authentication**: Not required
+
+**Request Body**:
+```json
+{
+  "email": "farmer@agritech.com"
+}
+```
 
 **Response**:
 ```json
 {
-  "message": "Listings fetched successfully",
+  "message": "Password reset email sent",
+  "data": {
+    "email_sent": true
+  }
+}
+```
+
+**Error Codes**:
+- `404`: Email not found
+
+---
+
+## Commodities
+
+### POST /api/v1/commodities/
+
+**Create Commodity Listing**
+
+Create a new commodity listing for auction
+
+**Authentication**: Required (farmer)
+
+**Request Body**:
+```json
+{
+  "commodity_name": "Premium Basmati Rice",
+  "description": "High-quality aged basmati rice from Punjab",
+  "quantity_kg": 1000.0,
+  "harvest_date": "2025-01-15",
+  "min_price": 45.5,
+  "closing_date": "2025-08-01T12:00:00Z"
+}
+```
+
+**Response**:
+```json
+{
+  "message": "Commodity created successfully",
+  "data": {
+    "id": "987fcdeb-51a2-43d7-b456-426614174000",
+    "commodity_name": "Premium Basmati Rice",
+    "description": "High-quality aged basmati rice from Punjab",
+    "quantity_kg": 1000.0,
+    "min_price": 45.5,
+    "current_price": 45.5,
+    "status": "active",
+    "seller_id": "123e4567-e89b-12d3-a456-426614174000",
+    "created_at": "2025-07-20T10:30:00Z"
+  }
+}
+```
+
+**Error Codes**:
+- `400`: Validation error
+- `401`: Authentication required
+- `403`: Farmer role required
+
+---
+
+### GET /api/v1/commodities/
+
+**Get All Commodities**
+
+Retrieve all active commodity listings with pagination
+
+**Authentication**: Not required
+
+**Response**:
+```json
+{
+  "message": "Commodities retrieved successfully",
   "data": [
     {
-      "id": "listing-uuid",
-      "name": "Premium Wheat - Grade A",
-      "slug": "premium-wheat-grade-a-2025-07-20",
-      "description": "High-quality wheat from Maharashtra farms...",
-      "category": {
-        "id": "category-uuid",
-        "name": "Grains",
-        "slug": "grains"
+      "id": "987fcdeb-51a2-43d7-b456-426614174000",
+      "commodity_name": "Premium Basmati Rice",
+      "description": "High-quality aged basmati rice",
+      "quantity_kg": 1000.0,
+      "min_price": 45.5,
+      "current_price": 48.75,
+      "status": "active",
+      "seller": {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "first_name": "John",
+        "last_name": "Farmer"
       },
-      "auctioneer": {
-        "id": "user-uuid",
-        "name": "John Farmer",
-        "rating": 4.8,
-        "verified": true
-      },
-      "price": 125.50,
-      "highest_bid": 130.25,
-      "bids_count": 15,
-      "quantity": 100.0,
-      "unit": "TONNES",
-      "quality_grade": "A",
-      "closing_date": "2025-07-25T18:00:00Z",
-      "time_remaining": {
-        "days": 5,
-        "hours": 8,
-        "minutes": 30
-      },
-      "images": [
-        {
-          "id": "image-uuid",
-          "url": "https://res.cloudinary.com/agritech/image/upload/...",
-          "thumbnail": "https://res.cloudinary.com/agritech/image/upload/c_thumb,w_200,h_200/..."
-        }
-      ],
-      "location": "Pune, Maharashtra",
-      "harvest_date": "2025-06-15",
-      "delivery_terms": "FOB farm gate",
-      "payment_terms": "Net 15 days",
-      "featured": false,
-      "auto_extend": true,
-      "reserve_met": true,
-      "created_at": "2025-07-20T10:00:00Z"
+      "bids_count": 5,
+      "closing_date": "2025-08-01T12:00:00Z"
     }
-  ],
-  "pagination": {
-    "page": 1,
-    "size": 50,
-    "total": 150,
-    "pages": 3,
-    "has_next": true,
-    "has_prev": false
-  }
+  ]
 }
 ```
-
-### **GET /listings/{listing_id}**
-Get detailed listing information
-
-**Response**:
-```json
-{
-  "message": "Listing details fetched",
-  "data": {
-    "id": "listing-uuid",
-    "name": "Premium Wheat - Grade A",
-    // ... (same as above with additional details)
-    "detailed_description": "Detailed farming information...",
-    "storage_location": "Climate-controlled warehouse",
-    "certifications": ["Organic", "FSSAI"],
-    "bid_history": [
-      {
-        "amount": 130.25,
-        "bidder": "Anonymous Bidder",
-        "bid_time": "2025-07-20T15:30:00Z",
-        "is_winning": true
-      }
-    ],
-    "price_history": [
-      {
-        "date": "2025-07-19",
-        "price": 122.00
-      }
-    ],
-    "related_listings": [
-      // Similar listings
-    ]
-  }
-}
-```
-
-### **POST /listings**
-Create a new listing (requires FARMER role)
-
-**Request Body**:
-```json
-{
-  "name": "Premium Wheat - Grade A",
-  "description": "High-quality wheat from organic farms",
-  "category_id": "category-uuid",
-  "price": 125.50,
-  "quantity": 100.0,
-  "unit": "TONNES",
-  "quality_grade": "A",
-  "closing_date": "2025-07-25T18:00:00Z",
-  "harvest_date": "2025-06-15",
-  "storage_location": "Climate-controlled warehouse",
-  "delivery_terms": "FOB farm gate",
-  "payment_terms": "Net 15 days",
-  "min_bid_increment": 1.00,
-  "auto_extend": true,
-  "featured": false,
-  "images": ["image-uuid-1", "image-uuid-2"]
-}
-```
-
-### **PUT /listings/{listing_id}**
-Update listing (owner only)
-
-### **DELETE /listings/{listing_id}**
-Delete listing (owner/admin only)
 
 ---
 
-## 🎯 **Bidding System**
+## Bidding
 
-### **GET /listings/{listing_id}/bids**
-Get bid history for a listing
+### POST /api/v1/bidding/place-bid
 
-**Response**:
-```json
-{
-  "message": "Bid history fetched",
-  "data": [
-    {
-      "id": "bid-uuid",
-      "amount": 130.25,
-      "bidder": {
-        "id": "user-uuid",
-        "name": "Anonymous Bidder",
-        "verified": true
-      },
-      "bid_time": "2025-07-20T15:30:00Z",
-      "is_winning": true,
-      "auto_bid": false
-    }
-  ],
-  "statistics": {
-    "total_bids": 15,
-    "unique_bidders": 8,
-    "highest_bid": 130.25,
-    "average_bid": 127.80
-  }
-}
-```
+**Place Bid**
 
-### **POST /listings/{listing_id}/bids**
-Place a bid (requires verified user)
+Place a bid on a commodity listing
+
+**Authentication**: Required (trader)
 
 **Request Body**:
 ```json
 {
-  "amount": 132.00,
-  "auto_bid": false,
-  "max_auto_bid": 140.00
+  "commodity_listing_id": "987fcdeb-51a2-43d7-b456-426614174000",
+  "amount": 50.0
 }
 ```
 
@@ -338,267 +263,205 @@ Place a bid (requires verified user)
 {
   "message": "Bid placed successfully",
   "data": {
-    "bid_id": "bid-uuid",
-    "amount": 132.00,
-    "is_winning": true,
-    "previous_highest": 130.25,
-    "next_minimum": 133.00,
-    "time_remaining": {
-      "days": 5,
-      "hours": 8,
-      "minutes": 28
-    }
+    "id": "456e7890-f12c-34e5-d678-901234567890",
+    "commodity_listing_id": "987fcdeb-51a2-43d7-b456-426614174000",
+    "bidder_id": "789abc12-3456-78de-f012-345678901234",
+    "amount": 50.0,
+    "status": "active",
+    "created_at": "2025-07-20T14:30:00Z"
   }
 }
 ```
 
-### **POST /listings/{listing_id}/auto-bid**
-Set up automatic bidding
+**Error Codes**:
+- `400`: Bid amount too low or invalid
+- `401`: Authentication required
+- `403`: Trader role required or KYC not verified
+- `404`: Commodity not found
+
+---
+
+## Price Tracking
+
+### POST /api/v1/price-tracking/alerts
+
+**Create Price Alert**
+
+Set up price alert notification for a commodity
+
+**Authentication**: Required (farmer, trader)
 
 **Request Body**:
 ```json
 {
-  "max_amount": 150.00,
-  "increment": 2.00,
-  "strategy": "conservative"
+  "commodity_id": "987fcdeb-51a2-43d7-b456-426614174000",
+  "threshold_price": 45.0,
+  "direction": "BELOW",
+  "notify_email": true,
+  "notify_sms": true
 }
 ```
-
----
-
-## 📂 **Categories**
-
-### **GET /commodities/categories**
-Get all commodity categories
 
 **Response**:
 ```json
 {
-  "message": "Categories fetched",
-  "data": [
-    {
-      "id": "category-uuid",
-      "name": "Grains",
-      "slug": "grains",
-      "description": "Cereal grains and pulses",
-      "image": {
-        "url": "https://res.cloudinary.com/agritech/image/upload/..."
-      },
-      "subcategories": [
-        {
-          "id": "sub-category-uuid",
-          "name": "Wheat",
-          "slug": "wheat",
-          "listings_count": 25
-        }
-      ],
-      "listings_count": 150,
-      "is_active": true
-    }
-  ]
-}
-```
-
----
-
-## 👤 **User Profile & Management**
-
-### **GET /auth/profile**
-Get current user profile (requires authentication)
-
-**Response**:
-```json
-{
-  "message": "Profile fetched",
+  "message": "Price alert created successfully",
   "data": {
-    "user": {
-      "id": "user-uuid",
-      "email": "farmer@agritech.com",
-      "first_name": "John",
-      "last_name": "Farmer",
-      "role": "FARMER",
-      "is_verified": true,
-      "is_active": true,
-      "avatar": {
-        "url": "https://res.cloudinary.com/agritech/image/upload/..."
-      },
-      "created_at": "2025-01-15T10:00:00Z"
-    },
-    "profile": {
-      "phone_number": "+91-9876543210",
-      "address": "Farm Road, Village Name",
-      "city": "Pune",
-      "state": "Maharashtra",
-      "country": "India",
-      "postal_code": "411001",
-      "date_of_birth": "1985-05-15",
-      "company_name": "Green Valley Farms",
-      "bio": "Organic farmer with 15 years experience"
-    },
-    "statistics": {
-      "listings_created": 45,
-      "successful_sales": 38,
-      "total_bids": 127,
-      "rating": 4.8,
-      "verified_since": "2025-02-01T00:00:00Z"
-    }
+    "id": "alert123-4567-89ab-cdef-012345678901",
+    "commodity_id": "987fcdeb-51a2-43d7-b456-426614174000",
+    "user_id": "789abc12-3456-78de-f012-345678901234",
+    "threshold_price": 45.0,
+    "direction": "BELOW",
+    "active": true,
+    "created_at": "2025-07-20T15:00:00Z"
   }
 }
 ```
 
-### **PUT /auth/profile**
-Update user profile
-
-**Request Body**:
-```json
-{
-  "first_name": "John",
-  "last_name": "Farmer",
-  "phone_number": "+91-9876543210",
-  "address": "Updated Farm Road",
-  "city": "Pune",
-  "bio": "Updated bio"
-}
-```
+**Error Codes**:
+- `400`: Invalid alert parameters
+- `401`: Authentication required
+- `404`: Commodity not found
 
 ---
 
-## 🔔 **Watchlist**
+## ML Recommendations
 
-### **GET /listings/watchlist**
-Get user's watchlist
+### GET /api/v6/recommendations/suggestions/{commodity_slug}
 
-### **POST /listings/watchlist**
-Add listing to watchlist
+**Get ML Trading Recommendation**
 
-**Request Body**:
-```json
-{
-  "listing_id": "listing-uuid"
-}
-```
+Get AI-powered trading recommendation for a specific commodity
 
-### **DELETE /listings/watchlist/{listing_id}**
-Remove from watchlist
-
----
-
-## 📊 **Price Tracking & Alerts**
-
-### **GET /price-tracking/history**
-Get price history for commodities
-
-**Query Parameters**:
-- `commodity_slug` (string): Specific commodity
-- `location` (string): Market location
-- `days` (int): Number of days (default: 30)
+**Authentication**: Required (farmer, trader)
 
 **Response**:
 ```json
 {
-  "message": "Price history fetched",
+  "message": "Recommendation generated successfully",
   "data": {
-    "commodity_slug": "wheat-premium",
-    "commodity_name": "Premium Wheat",
-    "current_price": 125.50,
-    "price_change_24h": 2.30,
-    "price_change_percent": 1.87,
-    "history": [
-      {
-        "date": "2025-07-20",
-        "price": 125.50,
-        "volume": 1500.0,
-        "market": "APMC Pune"
-      }
-    ],
-    "statistics": {
-      "avg_price_30d": 123.75,
-      "min_price_30d": 118.00,
-      "max_price_30d": 128.50,
-      "volatility": 0.12
-    }
-  }
-}
-```
-
-### **POST /price-tracking/alerts**
-Create price alert
-
-**Request Body**:
-```json
-{
-  "commodity_slug": "wheat-premium",
-  "alert_type": "PRICE_ABOVE",
-  "threshold_value": 130.00,
-  "notification_methods": {
-    "email": true,
-    "sms": false,
-    "push": true
-  }
-}
-```
-
-### **GET /price-tracking/alerts**
-Get user's price alerts
-
----
-
-## 🤖 **ML Recommendations**
-
-### **GET /ml/recommendations/{commodity_slug}**
-Get AI-powered trading recommendations
-
-**Response**:
-```json
-{
-  "message": "Trading recommendation generated",
-  "data": {
+    "commodity_slug": "premium-basmati-rice",
     "suggestion": "BUY",
-    "current_price": 125.50,
-    "predicted_price": 135.20,
-    "avg_price_30d": 120.30,
     "confidence": 0.85,
-    "price_change_pct": 7.72,
-    "reason": "Price expected to rise significantly and currently below average",
+    "current_price": 48.75,
+    "predicted_price": 52.3,
+    "avg_price_30d": 46.2,
+    "avg_price_7d": 48.1,
     "volatility": 0.12,
-    "market_position": "ABOVE_AVG",
-    "factors": [
-      "Seasonal demand increase",
-      "Limited supply in region",
-      "Historical price patterns"
-    ]
+    "weekly_trend": 0.025,
+    "monthly_trend": 0.055,
+    "reasoning": "Price trending upward with strong demand indicators",
+    "risk_level": "medium",
+    "timestamp": "2025-07-20T16:00:00Z"
   }
 }
 ```
 
-### **GET /ml/predictions/{commodity_slug}**
-Get price predictions
+**Error Codes**:
+- `400`: Insufficient data for prediction
+- `401`: Authentication required
+- `404`: Commodity not found
+
+---
+
+### GET /api/v6/recommendations/market-overview
+
+**Get Market Overview**
+
+Get AI-powered market sentiment and trading opportunities
+
+**Authentication**: Required (farmer, trader)
 
 **Response**:
 ```json
 {
-  "message": "Price predictions generated",
+  "message": "Market overview generated successfully",
   "data": {
-    "commodity_slug": "wheat-premium",
-    "predictions": [
+    "market_sentiment": {
+      "buy_percentage": 65.0,
+      "sell_percentage": 20.0,
+      "hold_percentage": 15.0
+    },
+    "top_buy_opportunities": [
       {
-        "date": "2025-07-21",
-        "predicted_price": 135.20,
-        "confidence": 0.85,
-        "day_ahead": 1
-      },
-      {
-        "date": "2025-07-22",
-        "predicted_price": 137.80,
-        "confidence": 0.78,
-        "day_ahead": 2
+        "commodity_slug": "wheat-premium",
+        "suggestion": "BUY",
+        "confidence": 0.92,
+        "current_price": 28.5,
+        "reasoning": "Strong seasonal demand expected"
       }
     ],
-    "model_info": {
-      "model_type": "Prophet + Linear Regression",
-      "training_samples": 250,
-      "last_trained": "2025-07-20T06:00:00Z",
-      "accuracy": 0.82
+    "total_analyzed": 45,
+    "timestamp": "2025-07-20T16:00:00Z"
+  }
+}
+```
+
+**Error Codes**:
+- `401`: Authentication required
+
+---
+
+## Admin
+
+### PATCH /api/v1/auth/verify-kyc/{user_id}
+
+**Verify User KYC**
+
+Admin endpoint to verify user's KYC status
+
+**Authentication**: Required (admin)
+
+**Request Body**:
+```json
+{
+  "is_verified": true,
+  "verification_notes": "All documents verified successfully"
+}
+```
+
+**Response**:
+```json
+{
+  "message": "KYC verification updated successfully",
+  "data": {
+    "user_id": "123e4567-e89b-12d3-a456-426614174000",
+    "is_verified": true,
+    "verified_at": "2025-07-20T16:30:00Z",
+    "verified_by": "admin456-7890-abcd-ef12-345678901234"
+  }
+}
+```
+
+**Error Codes**:
+- `401`: Authentication required
+- `403`: Admin role required
+- `404`: User not found
+
+---
+
+## General
+
+### GET /api/v1/general/health
+
+**Health Check**
+
+Check API health status
+
+**Authentication**: Not required
+
+**Response**:
+```json
+{
+  "message": "AgriTech API is healthy",
+  "data": {
+    "status": "healthy",
+    "timestamp": "2025-07-20T17:00:00Z",
+    "version": "6.0.0",
+    "services": {
+      "database": "connected",
+      "redis": "connected",
+      "ml_engine": "active"
     }
   }
 }
@@ -606,200 +469,298 @@ Get price predictions
 
 ---
 
-## 📱 **Mobile & Notifications**
+### POST /api/v1/general/upload-image
 
-### **POST /mobile/register-device**
+**Upload Image**
+
+Upload image file for profile or product listing
+
+**Authentication**: Not required
+
+**Request Body**:
+```json
+null
+```
+
+**Response**:
+```json
+{
+  "message": "Image uploaded successfully",
+  "data": {
+    "file_id": "img12345-6789-abcd-ef01-234567890123",
+    "filename": "product_image.jpg",
+    "content_type": "image/jpeg",
+    "size": 245760
+  }
+}
+```
+
+**Error Codes**:
+- `400`: Invalid file type or size
+- `413`: File too large
+
+---
+
+## Auctioneer
+
+### POST /api/v1/auctioneer/
+
+**Create General Listing**
+
+Create a general auction listing (non-commodity)
+
+**Authentication**: Required (farmer, trader)
+
+**Request Body**:
+```json
+{
+  "name": "Agricultural Equipment",
+  "desc": "High-quality tractor for sale",
+  "category": "Equipment",
+  "price": 250000.0,
+  "closing_date": "2025-08-15T18:00:00Z",
+  "file_type": "equipment",
+  "image_id": "img12345-6789-abcd-ef01-234567890123"
+}
+```
+
+**Response**:
+```json
+{
+  "message": "Listing created successfully",
+  "data": {
+    "id": "listing1-2345-6789-abcd-ef0123456789",
+    "name": "Agricultural Equipment",
+    "desc": "High-quality tractor for sale",
+    "price": 250000.0,
+    "status": "active",
+    "seller_id": "123e4567-e89b-12d3-a456-426614174000",
+    "created_at": "2025-07-20T18:00:00Z"
+  }
+}
+```
+
+**Error Codes**:
+- `400`: Validation error
+- `401`: Authentication required
+
+---
+
+## WebSocket
+
+### WebSocket /ws/bidding/{commodity_id}
+
+**Real-time Bidding Updates**
+
+WebSocket connection for real-time bidding updates
+
+**Authentication**: Required (farmer, trader)
+
+**Request Body**:
+```json
+{
+  "action": "subscribe",
+  "data": {
+    "commodity_id": "987fcdeb-51a2-43d7-b456-426614174000"
+  }
+}
+```
+
+**Response**:
+```json
+{
+  "type": "bid_update",
+  "event": "new_bid",
+  "data": {
+    "commodity_id": "987fcdeb-51a2-43d7-b456-426614174000",
+    "new_bid": {
+      "id": "bid12345-6789-abcd-ef01-234567890123",
+      "amount": 52.0,
+      "bidder": "Trader John",
+      "timestamp": "2025-07-20T18:30:00Z"
+    }
+  }
+}
+```
+
+**Error Codes**:
+- `401`: Authentication required
+- `404`: Commodity not found
+
+---
+
+## Mobile
+
+### POST /mobile/register-device
+
+**Register Mobile Device**
+
 Register mobile device for push notifications
 
-**Request Body**:
-```json
-{
-  "device_id": "unique-device-identifier",
-  "fcm_token": "firebase-cloud-messaging-token",
-  "device_type": "ANDROID",
-  "device_model": "Samsung Galaxy S21",
-  "os_version": "Android 12",
-  "app_version": "1.2.0"
-}
-```
-
-### **GET /mobile/notifications**
-Get in-app notifications
-
-### **PUT /mobile/notification-preferences**
-Update notification preferences
+**Authentication**: Required (farmer, trader)
 
 **Request Body**:
 ```json
 {
-  "email_notifications": true,
-  "push_notifications": true,
-  "bid_notifications": true,
-  "price_alerts": true,
-  "quiet_hours_start": "22:00",
-  "quiet_hours_end": "08:00"
+  "device_token": "dGVzdF9kZXZpY2VfdG9rZW4=",
+  "device_type": "android",
+  "app_version": "1.0.0",
+  "device_name": "Samsung Galaxy S21"
 }
 ```
 
----
-
-## 🔄 **Real-time WebSocket**
-
-### **WebSocket Connection**
-Connect to real-time updates
-
-**Endpoint**: `ws://localhost:8000/api/v6/realtime/ws/{listing_id}`
-
-**Authentication**: Include JWT token in query parameter
-```
-ws://localhost:8000/api/v6/realtime/ws/listing-uuid?token=jwt-token
-```
-
-**Message Types**:
-
-1. **New Bid**:
+**Response**:
 ```json
 {
-  "type": "new_bid",
+  "message": "Device registered successfully",
   "data": {
-    "listing_id": "listing-uuid",
-    "bid_amount": 132.00,
-    "bidder": "Anonymous",
-    "is_winning": true,
-    "time_remaining": "5d 8h 25m"
+    "device_id": "device12-3456-7890-abcd-ef0123456789",
+    "device_token": "dGVzdF9kZXZpY2VfdG9rZW4=",
+    "device_type": "android",
+    "registered_at": "2025-07-20T19:00:00Z"
   }
 }
 ```
 
-2. **Auction Extended**:
-```json
-{
-  "type": "auction_extended",
-  "data": {
-    "listing_id": "listing-uuid",
-    "new_closing_time": "2025-07-25T18:15:00Z",
-    "extension_minutes": 15
-  }
-}
-```
-
-3. **Auction Ended**:
-```json
-{
-  "type": "auction_ended",
-  "data": {
-    "listing_id": "listing-uuid",
-    "winning_bid": 145.50,
-    "winner": "Anonymous",
-    "total_bids": 28
-  }
-}
-```
+**Error Codes**:
+- `400`: Invalid device data
+- `401`: Authentication required
 
 ---
 
-## 📈 **Admin Endpoints**
+## Usage Examples
 
-### **GET /admin/dashboard**
-Admin dashboard statistics (requires admin role)
+### Complete User Journey
 
-### **GET /admin/users**
-Manage users
-
-### **PUT /admin/users/{user_id}/verify**
-Verify user KYC
-
-### **GET /admin/listings/pending**
-Get pending listings for approval
-
----
-
-## 🛡️ **Security & Error Handling**
-
-### **Rate Limiting**
-- **Standard endpoints**: 100 requests/minute
-- **Authentication endpoints**: 10 requests/minute
-- **File upload**: 5 uploads/minute
-
-### **HTTP Status Codes**
-
-| Code | Meaning |
-|------|---------|
-| 200 | Success |
-| 201 | Created |
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Not Found |
-| 422 | Validation Error |
-| 429 | Rate Limited |
-| 500 | Server Error |
-
-### **Error Response Format**
-```json
-{
-  "error": "Validation Error",
-  "message": "The provided data is invalid",
-  "details": {
-    "field_name": ["Field is required"]
-  },
-  "timestamp": "2025-07-20T15:30:00Z",
-  "path": "/api/v6/listings"
-}
-```
-
----
-
-## 📋 **Request/Response Examples**
-
-### **Pagination Format**
-```json
-{
-  "data": [...],
-  "pagination": {
-    "page": 1,
-    "size": 50,
-    "total": 150,
-    "pages": 3,
-    "has_next": true,
-    "has_prev": false
-  }
-}
-```
-
-### **File Upload Response**
-```json
-{
-  "message": "File uploaded successfully",
-  "data": {
-    "file_id": "file-uuid",
-    "url": "https://res.cloudinary.com/agritech/image/upload/v1234567890/sample.jpg",
-    "thumbnail": "https://res.cloudinary.com/agritech/image/upload/c_thumb,w_200,h_200/v1234567890/sample.jpg",
-    "size": 1024000,
-    "format": "jpg"
-  }
-}
-```
-
----
-
-## 🔧 **Development Tools**
-
-### **API Testing**
-- **Swagger UI**: `http://localhost:8000/docs`
-- **Postman Collection**: Available in `/docs/postman/`
-- **curl Examples**: Available in `/docs/curl-examples/`
-
-### **Authentication Testing**
+#### 1. User Registration
 ```bash
-# Get access token
-curl -X POST "http://localhost:8000/api/v6/auth/login" \
+curl -X POST http://localhost:8000/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"email":"test@agritech.com","password":"testpass123"}'
-
-# Use token in requests
-curl -X GET "http://localhost:8000/api/v6/listings" \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+  -d '{
+    "email": "farmer@example.com",
+    "password": "SecurePass123!",
+    "first_name": "John",
+    "last_name": "Farmer",
+    "role": "farmer",
+    "terms_agreement": true,
+    "upi_id": "john@paytm",
+    "bank_account": "1234567890123456",
+    "ifsc_code": "HDFC0001234"
+  }'
 ```
 
-This comprehensive API documentation provides all endpoints, request/response formats, and examples needed for frontend development integration.
+#### 2. User Login
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "farmer@example.com",
+    "password": "SecurePass123!"
+  }'
+```
+
+#### 3. Create Commodity Listing
+```bash
+curl -X POST http://localhost:8000/api/v1/commodities/ \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commodity_name": "Premium Wheat",
+    "description": "High quality wheat",
+    "quantity_kg": 1000.0,
+    "harvest_date": "2025-01-15",
+    "min_price": 25.50,
+    "closing_date": "2025-08-01T12:00:00Z"
+  }'
+```
+
+#### 4. Place Bid
+```bash
+curl -X POST http://localhost:8000/api/v1/bidding/place-bid \
+  -H "Authorization: Bearer <trader_token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "commodity_listing_id": "commodity_id_here",
+    "amount": 30.00
+  }'
+```
+
+#### 5. Get ML Recommendation
+```bash
+curl -X GET http://localhost:8000/api/v6/recommendations/suggestions/wheat-premium \
+  -H "Authorization: Bearer <your_token>"
+```
+
+---
+
+## Security
+
+### Password Requirements
+- Minimum 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one number
+- At least one special character
+
+### Rate Limiting
+- 60 requests per minute per IP
+- 1000 requests per hour per IP
+- 5 failed login attempts result in 30-minute lockout
+
+### Data Protection
+- All sensitive data encrypted at rest
+- HTTPS required in production
+- JWT tokens expire after 24 hours
+- Audit logging for all critical operations
+
+### KYC Verification
+- Required for bidding functionality
+- Admin verification process
+- Bank account and UPI ID validation
+- Document upload support
+
+---
+
+## Changelog
+
+### Version 6.0.0 (Current)
+- ✅ ML-powered trading recommendations
+- ✅ Advanced price tracking and alerts
+- ✅ Real-time bidding with WebSocket
+- ✅ Enhanced security with audit logging
+- ✅ Mobile device registration
+- ✅ Image upload for profiles and listings
+- ✅ Email/SMS notification system
+- ✅ Comprehensive API testing suite
+
+### Version 5.0.0
+- ✅ Price history tracking
+- ✅ Alert subscription system
+- ✅ On-site notifications
+- ✅ Enhanced user roles
+
+### Version 4.0.0
+- ✅ Real-time bidding system
+- ✅ WebSocket implementation
+- ✅ Mobile API endpoints
+
+### Version 3.0.0
+- ✅ KYC verification system
+- ✅ Admin management tools
+- ✅ Enhanced security
+
+### Version 2.0.0
+- ✅ Commodity bidding system
+- ✅ User authentication
+- ✅ Basic marketplace features
+
+### Version 1.0.0
+- ✅ Initial API implementation
+- ✅ User registration/login
+- ✅ Basic commodity listings
+
+---
+
+*Last updated: July 20, 2025*
+*API Version: 1.0.0*
+*Documentation generated automatically*
