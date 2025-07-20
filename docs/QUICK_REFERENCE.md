@@ -1,123 +1,185 @@
-# ⚡ AgriTech Platform - Quick Reference
+# ⚡ Quick Reference Guide
 
-## 🚀 **Start Server (Choose One)**
+## 🚀 **Essential Commands**
 
-### **🐳 Docker Desktop (Recommended)**
-```
-1. Open Docker Desktop
-2. Find "bidout-auction-v6"
-3. Click "Start"
-4. Wait for "Healthy" status
-```
-
-### **💻 Command Line**
-```powershell
-cd "C:\Users\konth\Desktop\project\Idea\Live_Bidding\bidout-auction-v6"
+### **Start Server**
+```bash
+# Docker (Recommended - with Redis)
 docker-compose up -d
-```
 
-### **🔧 Development Script**
-```powershell
+# Development (without Redis)
 python start_server.py
+
+# Direct (without Redis)
+uvicorn app.main:app --reload
 ```
 
-### **🔍 Debug Mode**
-```powershell
-python start_server.py --debug
-```
-
----
-
-## 🌐 **Essential URLs**
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| **Welcome Page** | http://localhost:8000/ | Platform info |
-| **API Docs** | http://localhost:8000/docs | Interactive API |
-| **Health Check** | http://localhost:8000/api/v6/healthcheck | Status |
-| **Database Admin** | http://localhost:5050/ | pgAdmin |
-
-### **pgAdmin Login**
-- **Email**: pgadmin4@pgadmin.org
-- **Password**: admin
-
----
-
-## 🔧 **Common Commands**
-
-### **Container Management**
-```powershell
-# Check status
-docker ps
-
-# View logs
-docker-compose logs api
-
-# Stop all
+### **Stop Server**
+```bash
+# Docker
 docker-compose down
 
-# Restart
-docker-compose restart
+# Direct
+Ctrl+C
 ```
 
-### **Health Checks**
-```powershell
-# Test API
+---
+
+## 🌐 **Key URLs**
+
+| Service | URL |
+|---------|-----|
+| API Docs | http://localhost:8000/docs |
+| Health Check | http://localhost:8000/api/v6/healthcheck |
+| Database Admin | http://localhost:5050 |
+| Redis Health | http://localhost:8000/api/v6/redis-health |
+
+---
+
+## 🔑 **Default Credentials**
+
+**pgAdmin (Database)**:
+- Email: `pgadmin4@pgadmin.org`
+- Password: `admin`
+
+**Test User**:
+- Email: `farmer@agritech.com`  
+- Password: `farmer123`
+
+---
+
+## 📊 **Database Quick Access**
+
+```bash
+# Connect to database
+docker exec -it postgres psql -U agritech_user -d agritech_db
+
+# Common queries
+\dt                    # List tables
+\d users              # Describe users table
+SELECT COUNT(*) FROM listings;  # Count listings
+```
+
+---
+
+## 🔧 **Common Issues & Solutions**
+
+### **Port 8000 in use**
+```bash
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+```
+
+### **Database not starting**
+```bash
+docker-compose restart postgres
+docker-compose logs postgres
+```
+
+### **Redis connection error**
+```bash
+docker-compose restart redis
+```
+
+### **Permission errors**
+```bash
+# Run as administrator
+# Or check Docker Desktop is running
+```
+
+---
+
+## 📦 **Quick Commands**
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest --disable-warnings -vv
+
+# Database migration
+alembic upgrade heads
+
+# Create new migration
+alembic revision --autogenerate -m "description"
+
+# Check API health
 curl http://localhost:8000/api/v6/healthcheck
 
-# Check containers
-docker-compose ps
+# View logs
+docker-compose logs -f
 ```
 
 ---
 
-## ⚠️ **Quick Troubleshooting**
+## 🎯 **API Testing**
 
-### **Port 8000 Already in Use**
-```powershell
-# Find process using port 8000
-netstat -ano | findstr :8000
+### **Authentication**
+```bash
+# Register user
+curl -X POST "http://localhost:8000/api/v6/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123","first_name":"Test","last_name":"User","role":"FARMER","terms_agreement":true}'
 
-# Kill process (replace PID)
-taskkill /PID [PID] /F
+# Login
+curl -X POST "http://localhost:8000/api/v6/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"test123"}'
 ```
 
-### **Docker Not Starting**
-```
-1. Restart Docker Desktop
-2. Check system resources (RAM/CPU)
-3. Try: docker-compose up --build
-```
+### **Listings**
+```bash
+# Get listings
+curl "http://localhost:8000/api/v6/listings"
 
-### **API Not Responding**
-```
-1. Check: docker-compose ps
-2. View logs: docker logs bidout-auction-v6-api-1
-3. Try health check: http://localhost:8000/api/v6/healthcheck
+# Create listing (requires auth token)
+curl -X POST "http://localhost:8000/api/v6/listings" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test Wheat","description":"Premium wheat","category_id":"CATEGORY_UUID","price":100,"quantity":50,"unit":"TONNES","closing_date":"2025-08-01T18:00:00Z"}'
 ```
 
 ---
 
-## 📚 **Documentation Files**
+## 📱 **Development Workflow**
 
-- **[SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md)** - Complete startup guide
-- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - API reference
-- **[DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md)** - Docker deployment
-- **[ARCHITECTURE_DIAGRAMS.md](./ARCHITECTURE_DIAGRAMS.md)** - System design
-- **[PHASE_7_COMPLETION_REPORT.md](./PHASE_7_COMPLETION_REPORT.md)** - Project status
-
----
-
-## ✅ **Success Checklist**
-
-After starting, verify these work:
-
-- [ ] http://localhost:8000/ shows welcome message
-- [ ] http://localhost:8000/docs loads API documentation
-- [ ] http://localhost:8000/api/v6/healthcheck returns `{"success":"pong!"}`
-- [ ] http://localhost:5050/ loads pgAdmin
-- [ ] `docker ps` shows 4 healthy containers
+1. **Start Services**: `docker-compose up -d`
+2. **Check Health**: Visit health check URL
+3. **View Docs**: Open interactive API docs
+4. **Test APIs**: Use Swagger UI or curl
+5. **Check Logs**: `docker-compose logs -f`
+6. **Stop Services**: `docker-compose down`
 
 ---
 
-**🎯 Need Help?** Check the [SERVER_STARTUP_GUIDE.md](./SERVER_STARTUP_GUIDE.md) for detailed instructions!
+## 🆘 **Emergency Commands**
+
+```bash
+# Nuclear option - reset everything
+docker-compose down -v
+docker system prune -f
+docker-compose up -d --build
+
+# Reset database only
+docker-compose down
+docker volume rm bidout-auction-v6_postgres_data
+docker-compose up -d
+
+# View all containers
+docker ps -a
+
+# Clean up
+docker system prune -f
+```
+
+---
+
+## 📞 **Support Resources**
+
+- **Full Documentation**: [docs/README.md](./README.md)
+- **Database Schema**: [docs/DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md)  
+- **API Documentation**: [docs/API_DOCUMENTATION.md](./API_DOCUMENTATION.md)
+- **Frontend Guide**: [docs/FRONTEND_INTEGRATION.md](./FRONTEND_INTEGRATION.md)
+
+**Quick Help**: Check health endpoints first, then logs, then restart services.
