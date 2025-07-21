@@ -1,6 +1,7 @@
-from typing import Optional, List, Any
-from sqlalchemy import or_, select
+from typing import Optional, List, Any, Dict
+from sqlalchemy import or_, select, func, and_, text
 from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime, timedelta
 
 from app.db.managers.base import BaseManager
 from app.db.models.listings import Category, Listing, WatchList, Bid
@@ -301,11 +302,232 @@ class BidManager(BaseManager[Bid]):
         return new_bid
 
 
+class StatsManager:
+    """Manager for platform statistics"""
+    
+    @staticmethod
+    async def get_active_bids_stats(db: AsyncSession) -> Dict[str, Any]:
+        """Get active bids statistics"""
+        now = datetime.utcnow()
+        
+        # Count active auctions (listings that are still accepting bids)
+        active_auctions = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Count total active bids
+        active_bids = await db.execute(
+            select(func.count(Bid.id)).join(Listing).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Get highest bid amount
+        highest_bid = await db.execute(
+            select(func.max(Bid.amount)).join(Listing).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Get average bid amount
+        avg_bid = await db.execute(
+            select(func.avg(Bid.amount)).join(Listing).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Count auctions ending today
+        tomorrow = now + timedelta(days=1)
+        ending_today = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.closing_date < tomorrow,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Count auctions ending this week
+        next_week = now + timedelta(days=7)
+        ending_this_week = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.closing_date < next_week,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        return {
+            "total_active_auctions": active_auctions.scalar() or 0,
+            "total_active_bids": active_bids.scalar() or 0,
+            "highest_bid_amount": float(highest_bid.scalar() or 0),
+            "average_bid_amount": float(avg_bid.scalar() or 0),
+            "auctions_ending_today": ending_today.scalar() or 0,
+            "auctions_ending_this_week": ending_this_week.scalar() or 0
+        }
+    
+    @staticmethod
+    async def get_commodities_stats(db: AsyncSession) -> Dict[str, Any]:
+        """Get commodities statistics"""
+        
+        # Total commodities
+        total_commodities = await db.execute(select(func.count(Listing.id)))
+        
+        # Active commodities
+        now = datetime.utcnow()
+        active_commodities = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Pending approval - using active=False as pending
+        pending_approval = await db.execute(
+            select(func.count(Listing.id)).where(Listing.active == False)
+        )
+        
+        # Categories count
+        categories_count = await db.execute(select(func.count(Category.id)))
+        
+        # Most popular category (category with most listings)
+        most_popular = await db.execute(
+            select(Category.name, func.count(Listing.id).label('listing_count'))
+            .join(Listing)
+            .group_by(Category.id, Category.name)
+            .order_by(func.count(Listing.id).desc())
+            .limit(1)
+        )
+        most_popular_result = most_popular.first()
+        most_popular_category = most_popular_result[0] if most_popular_result else "N/A"
+        
+        # Average commodity price
+        avg_price = await db.execute(select(func.avg(Listing.price)))
+        
+        return {
+            "total_commodities": total_commodities.scalar() or 0,
+            "active_commodities": active_commodities.scalar() or 0,
+            "pending_approval": pending_approval.scalar() or 0,
+            "categories_count": categories_count.scalar() or 0,
+            "most_popular_category": most_popular_category,
+            "average_commodity_price": float(avg_price.scalar() or 0)
+        }
+    
+    @staticmethod
+    async def get_platform_stats(db: AsyncSession) -> Dict[str, Any]:
+        """Get comprehensive platform statistics"""
+        from app.db.models.accounts import User
+        
+        now = datetime.utcnow()
+        current_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        
+        # User stats
+        total_users = await db.execute(select(func.count(User.id)))
+        active_users = await db.execute(
+            select(func.count(User.id)).where(User.is_email_verified == True)
+        )
+        verified_users = await db.execute(
+            select(func.count(User.id)).where(User.is_verified == True)
+        )
+        
+        # Listing stats
+        total_listings = await db.execute(select(func.count(Listing.id)))
+        active_listings = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        pending_listings = await db.execute(
+            select(func.count(Listing.id)).where(Listing.active == False)
+        )
+        
+        # Bid stats
+        total_bids = await db.execute(select(func.count(Bid.id)))
+        active_auctions = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date > now,
+                    Listing.active == True
+                )
+            )
+        )
+        
+        # Revenue calculation (sum of highest bids for completed auctions)
+        # Get the highest bid amount for each listing (simplified calculation)
+        total_revenue = await db.execute(
+            select(func.sum(Listing.highest_bid)).where(Listing.active == False)
+        )
+        
+        monthly_revenue = await db.execute(
+            select(func.sum(Listing.highest_bid))
+            .where(
+                and_(
+                    Listing.closing_date >= current_month_start,
+                    Listing.closing_date < now,
+                    Listing.active == False  # Completed auctions
+                )
+            )
+        )
+        
+        # Transaction counts (completed auctions)
+        total_transactions = await db.execute(
+            select(func.count(Listing.id)).where(Listing.active == False)
+        )
+        
+        monthly_transactions = await db.execute(
+            select(func.count(Listing.id)).where(
+                and_(
+                    Listing.closing_date >= current_month_start,
+                    Listing.closing_date < now,
+                    Listing.active == False
+                )
+            )
+        )
+        
+        return {
+            "total_users": total_users.scalar() or 0,
+            "active_users": active_users.scalar() or 0,
+            "verified_users": verified_users.scalar() or 0,
+            "total_listings": total_listings.scalar() or 0,
+            "active_listings": active_listings.scalar() or 0,
+            "pending_approval_listings": pending_listings.scalar() or 0,
+            "total_bids": total_bids.scalar() or 0,
+            "active_auctions": active_auctions.scalar() or 0,
+            "total_revenue": float(total_revenue.scalar() or 0),
+            "monthly_revenue": float(monthly_revenue.scalar() or 0),
+            "total_transactions": total_transactions.scalar() or 0,
+            "monthly_transactions": monthly_transactions.scalar() or 0
+        }
+
+
 # How to use
 category_manager = CategoryManager(Category)
 listing_manager = ListingManager(Listing)
 watchlist_manager = WatchListManager(WatchList)
 bid_manager = BidManager(Bid)
+stats_manager = StatsManager()
 
 
 # this can now be used to perform any available crud actions e.g category_manager.get_by_id(db=db, id=id)
