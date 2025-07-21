@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.responses import Response
+from fastapi.requests import Request
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.routes import (
@@ -34,19 +36,56 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[str(origin) for origin in settings.CORS_ALLOWED_ORIGINS],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
     allow_headers=[
-        "x-requested-with",
-        "content-type",
         "accept",
-        "origin",
-        "authorization",
-        "guestuserid",
         "accept-encoding",
+        "authorization",
+        "content-type",
+        "dnt",
+        "origin",
+        "user-agent",
+        "x-csrftoken",
+        "x-requested-with",
+        "guestuserid",
         "access-control-allow-origin",
         "content-disposition",
     ],
+    expose_headers=[
+        "content-disposition",
+        "content-type",
+        "content-length",
+    ],
 )
+
+# Handle OPTIONS requests explicitly for CORS preflight
+@app.options("/")
+async def options_root_handler(request: Request):
+    """Handle CORS preflight requests for root"""
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD",
+            "Access-Control-Allow-Headers": "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with, guestuserid",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Max-Age": "86400",  # 24 hours
+        }
+    )
+
+@app.options("/{full_path:path}")
+async def options_handler(request: Request, full_path: str):
+    """Handle CORS preflight requests"""
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD",
+            "Access-Control-Allow-Headers": "accept, accept-encoding, authorization, content-type, dnt, origin, user-agent, x-csrftoken, x-requested-with, guestuserid",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Max-Age": "86400",  # 24 hours
+        }
+    )
 
 app.include_router(main_router, prefix="/api/v6")
 

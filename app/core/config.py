@@ -122,7 +122,14 @@ class Settings(BaseSettings):
 
     @validator("CORS_ALLOWED_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v):
-        return v.split()
+        if isinstance(v, str):
+            # Split by comma first, then by space, and clean up
+            origins = []
+            for item in v.replace(',', ' ').split():
+                if item.strip():
+                    origins.append(item.strip())
+            return origins
+        return v
 
     @validator("EMAIL_CONFIG", pre=True)
     def _assemble_email_config(cls, v: Optional[str], values):

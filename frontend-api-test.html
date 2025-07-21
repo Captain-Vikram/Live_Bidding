@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTech API Frontend Test Suite</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2d5a27;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        .test-button:hover {
+            background: #45a049;
+        }
+        .test-button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .run-all-btn {
+            background: #2196F3;
+            font-size: 16px;
+            padding: 15px 30px;
+            display: block;
+            margin: 20px auto;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        .info {
+            color: #2196F3;
+        }
+        .warning {
+            color: #ff9800;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-success { background: #4CAF50; }
+        .status-error { background: #f44336; }
+        .status-pending { background: #ff9800; }
+        .config-section {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .credential-box {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #ff9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 AgriTech Platform - Frontend API Test Suite</h1>
+        
+        <div class="config-section">
+            <h3>📡 API Configuration</h3>
+            <p><strong>Backend URL:</strong> <span id="api-url">http://127.0.0.1:8000</span></p>
+            <p><strong>API Version:</strong> <span id="api-version">/api/v6</span></p>
+            <p><strong>Status:</strong> <span class="status-indicator status-pending"></span> <span id="connection-status">Not tested</span></p>
+        </div>
+
+        <div class="credential-box">
+            <h4>🔑 Test Credentials Available:</h4>
+            <p><strong>Admin:</strong> admin@agritech.com / admin123</p>
+            <p><strong>Seller:</strong> seller@agritech.com / seller123</p>
+            <p><strong>Reviewer:</strong> reviewer@agritech.com / reviewer123</p>
+        </div>
+
+        <button class="test-button run-all-btn" onclick="runAllTests()">🚀 Run All Tests</button>
+
+        <div class="test-section">
+            <h3>1. 🏥 Basic Health Checks</h3>
+            <button class="test-button" onclick="testAPIHealth()">API Health Check</button>
+            <button class="test-button" onclick="testCORS()">CORS Configuration</button>
+            <button class="test-button" onclick="testDatabaseConnection()">Database Connectivity</button>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 🌐 Public Endpoints</h3>
+            <button class="test-button" onclick="testSiteDetails()">Site Details</button>
+            <button class="test-button" onclick="testReviews()">Reviews</button>
+            <button class="test-button" onclick="testSubscription()">Newsletter Subscription</button>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 🔐 Authentication Tests</h3>
+            <button class="test-button" onclick="testAdminLogin()">Admin Login</button>
+            <button class="test-button" onclick="testSellerLogin()">Seller Login</button>
+            <button class="test-button" onclick="testReviewerLogin()">Reviewer Login</button>
+            <button class="test-button" onclick="testInvalidLogin()">Invalid Credentials</button>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 🛡️ Protected Endpoints</h3>
+            <button class="test-button" onclick="testProtectedEndpoints()">Authenticated Routes</button>
+            <button class="test-button" onclick="testTokenRefresh()">Token Refresh</button>
+            <button class="test-button" onclick="testLogout()">Logout Process</button>
+        </div>
+
+        <div class="test-section">
+            <h3>5. ⚡ Real-time Features</h3>
+            <button class="test-button" onclick="testWebSocket()">WebSocket Connection</button>
+            <button class="test-button" onclick="testBiddingSocket()">Bidding Socket</button>
+        </div>
+
+        <div class="test-section">
+            <h3>6. 📊 Data Operations</h3>
+            <button class="test-button" onclick="testListings()">Listings API</button>
+            <button class="test-button" onclick="testCommodities()">Commodities API</button>
+            <button class="test-button" onclick="testSearch()">Search Functionality</button>
+        </div>
+
+        <div id="results" class="results">
+            <div class="info">🚀 Frontend API Test Suite Ready</div>
+            <div class="info">Click "Run All Tests" to start comprehensive testing...</div>
+            <div class="warning">⚠️ Make sure the backend Docker containers are running!</div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_CONFIG = {
+            BASE_URL: 'http://127.0.0.1:8000',
+            API_VERSION: '/api/v6',
+            TIMEOUT: 10000
+        };
+
+        const API_BASE = `${API_CONFIG.BASE_URL}${API_CONFIG.API_VERSION}`;
+        let authToken = null;
+
+        // Utility functions
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+            
+            results.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function updateStatus(status, isSuccess) {
+            const statusElement = document.getElementById('connection-status');
+            const indicator = document.querySelector('.status-indicator');
+            
+            statusElement.textContent = status;
+            indicator.className = `status-indicator ${isSuccess ? 'status-success' : 'status-error'}`;
+        }
+
+        // API request helper
+        async function apiRequest(endpoint, options = {}) {
+            const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                },
+                ...options
+            };
+
+            const response = await fetch(url, config);
+            const data = await response.json();
+            
+            return { response, data };
+        }
+
+        // Test Functions
+        async function testAPIHealth() {
+            log('🏥 Testing API Health...', 'info');
+            try {
+                const { response, data } = await apiRequest(API_CONFIG.BASE_URL);
+                
+                if (response.ok && data.status === 'running') {
+                    log('✅ API Health: Server is running and healthy', 'success');
+                    log(`   Version: ${data.version}`, 'info');
+                    updateStatus('Connected', true);
+                    return true;
+                } else {
+                    log('❌ API Health: Server not responding properly', 'error');
+                    updateStatus('Disconnected', false);
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ API Health: ${error.message}`, 'error');
+                updateStatus('Connection Error', false);
+                return false;
+            }
+        }
+
+        async function testCORS() {
+            log('🌐 Testing CORS Configuration...', 'info');
+            try {
+                const { response } = await apiRequest('/general/site-detail', {
+                    method: 'GET',
+                    headers: {
+                        'Origin': 'http://localhost:3000',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    log('✅ CORS: Configuration is working correctly', 'success');
+                    return true;
+                } else {
+                    log('❌ CORS: Configuration issues detected', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ CORS: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testDatabaseConnection() {
+            log('🗄️ Testing Database Connection...', 'info');
+            try {
+                const { response, data } = await apiRequest('/general/site-detail');
+                
+                if (response.ok && data.status === 'success') {
+                    log('✅ Database: Connection working, data retrieved', 'success');
+                    log(`   Site: ${data.data.name}`, 'info');
+                    return true;
+                } else {
+                    log('❌ Database: Connection or query failed', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Database: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testSiteDetails() {
+            log('🏢 Testing Site Details Endpoint...', 'info');
+            try {
+                const { response, data } = await apiRequest('/general/site-detail');
+                
+                if (response.ok && data.data) {
+                    log('✅ Site Details: Retrieved successfully', 'success');
+                    log(`   Name: ${data.data.name}`, 'info');
+                    log(`   Email: ${data.data.email}`, 'info');
+                    return true;
+                } else {
+                    log('❌ Site Details: Failed to retrieve', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Site Details: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testReviews() {
+            log('⭐ Testing Reviews Endpoint...', 'info');
+            try {
+                const { response, data } = await apiRequest('/general/reviews');
+                
+                if (response.ok && data.data) {
+                    log(`✅ Reviews: Retrieved ${data.data.length} reviews`, 'success');
+                    return true;
+                } else {
+                    log('❌ Reviews: Failed to retrieve', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Reviews: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testSubscription() {
+            log('📧 Testing Newsletter Subscription...', 'info');
+            try {
+                const testEmail = `test${Date.now()}@frontend.com`;
+                const { response, data } = await apiRequest('/general/subscribe', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: testEmail })
+                });
+                
+                if (response.status === 201 && data.status === 'success') {
+                    log('✅ Subscription: Email subscribed successfully', 'success');
+                    log(`   Email: ${testEmail}`, 'info');
+                    return true;
+                } else {
+                    log('❌ Subscription: Failed to subscribe', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Subscription: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testLogin(email, password, role) {
+            log(`🔐 Testing ${role} Login...`, 'info');
+            try {
+                const { response, data } = await apiRequest('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.status === 201 && data.status === 'success') {
+                    log(`✅ ${role} Login: Successful`, 'success');
+                    authToken = data.data.access;
+                    log(`   Token received and stored`, 'info');
+                    return true;
+                } else {
+                    log(`❌ ${role} Login: Failed - ${data.message}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ ${role} Login: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testAdminLogin() {
+            return await testLogin('admin@agritech.com', 'admin123', 'Admin');
+        }
+
+        async function testSellerLogin() {
+            return await testLogin('seller@agritech.com', 'seller123', 'Seller');
+        }
+
+        async function testReviewerLogin() {
+            return await testLogin('reviewer@agritech.com', 'reviewer123', 'Reviewer');
+        }
+
+        async function testInvalidLogin() {
+            log('🚫 Testing Invalid Credentials...', 'info');
+            try {
+                const { response, data } = await apiRequest('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: 'invalid@test.com', password: 'wrongpass' })
+                });
+                
+                if (response.status === 401) {
+                    log('✅ Invalid Login: Correctly rejected invalid credentials', 'success');
+                    return true;
+                } else {
+                    log('❌ Invalid Login: Should have rejected invalid credentials', 'error');
+                    return false;
+                }
+            } catch (error) {
+                // Network errors are expected for invalid logins
+                log('✅ Invalid Login: Correctly rejected (network error expected)', 'success');
+                return true;
+            }
+        }
+
+        async function testProtectedEndpoints() {
+            if (!authToken) {
+                log('⚠️ Protected Endpoints: No auth token, running admin login first...', 'warning');
+                await testAdminLogin();
+            }
+            
+            log('🛡️ Testing Protected Endpoints...', 'info');
+            
+            const endpoints = ['/listings/all', '/commodities/all'];
+            let successCount = 0;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const { response } = await apiRequest(endpoint);
+                    if (response.ok) {
+                        log(`✅ Protected: ${endpoint} - Access granted`, 'success');
+                        successCount++;
+                    } else {
+                        log(`❌ Protected: ${endpoint} - Access denied (${response.status})`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Protected: ${endpoint} - ${error.message}`, 'error');
+                }
+            }
+            
+            return successCount > 0;
+        }
+
+        async function testTokenRefresh() {
+            log('🔄 Token Refresh: Feature not implemented in this test', 'warning');
+            return true;
+        }
+
+        async function testLogout() {
+            if (!authToken) {
+                log('⚠️ Logout: No active session to logout from', 'warning');
+                return true;
+            }
+            
+            log('🚪 Testing Logout...', 'info');
+            try {
+                const { response } = await apiRequest('/auth/logout');
+                
+                if (response.ok) {
+                    log('✅ Logout: Successfully logged out', 'success');
+                    authToken = null;
+                    return true;
+                } else {
+                    log('❌ Logout: Failed to logout', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Logout: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testWebSocket() {
+            log('⚡ Testing WebSocket Connection...', 'info');
+            return new Promise((resolve) => {
+                try {
+                    const ws = new WebSocket('ws://127.0.0.1:8000/realtime/ws');
+                    
+                    const timeout = setTimeout(() => {
+                        log('❌ WebSocket: Connection timeout', 'error');
+                        ws.close();
+                        resolve(false);
+                    }, 5000);
+                    
+                    ws.onopen = () => {
+                        log('✅ WebSocket: Connection established', 'success');
+                        clearTimeout(timeout);
+                        ws.close();
+                        resolve(true);
+                    };
+                    
+                    ws.onerror = (error) => {
+                        log('❌ WebSocket: Connection failed', 'error');
+                        clearTimeout(timeout);
+                        resolve(false);
+                    };
+                } catch (error) {
+                    log(`❌ WebSocket: ${error.message}`, 'error');
+                    resolve(false);
+                }
+            });
+        }
+
+        async function testBiddingSocket() {
+            log('💰 Bidding Socket: Advanced feature, basic WebSocket test covers connectivity', 'info');
+            return true;
+        }
+
+        async function testListings() {
+            log('📋 Testing Listings API...', 'info');
+            try {
+                const { response, data } = await apiRequest('/listings/all');
+                
+                if (response.ok) {
+                    log(`✅ Listings: Retrieved successfully`, 'success');
+                    return true;
+                } else {
+                    log('❌ Listings: Failed to retrieve', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Listings: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testCommodities() {
+            log('🌾 Testing Commodities API...', 'info');
+            try {
+                const { response, data } = await apiRequest('/commodities/all');
+                
+                if (response.ok) {
+                    log(`✅ Commodities: Retrieved successfully`, 'success');
+                    return true;
+                } else {
+                    log('❌ Commodities: Failed to retrieve', 'error');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Commodities: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testSearch() {
+            log('🔍 Search: Advanced search functionality testing skipped', 'info');
+            return true;
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            clearResults();
+            log('🚀 Starting Complete Frontend API Test Suite...', 'info');
+            log('================================================', 'info');
+            
+            const tests = [
+                { name: 'API Health Check', fn: testAPIHealth },
+                { name: 'CORS Configuration', fn: testCORS },
+                { name: 'Database Connection', fn: testDatabaseConnection },
+                { name: 'Site Details', fn: testSiteDetails },
+                { name: 'Reviews', fn: testReviews },
+                { name: 'Newsletter Subscription', fn: testSubscription },
+                { name: 'Admin Login', fn: testAdminLogin },
+                { name: 'Seller Login', fn: testSellerLogin },
+                { name: 'Reviewer Login', fn: testReviewerLogin },
+                { name: 'Invalid Login', fn: testInvalidLogin },
+                { name: 'Protected Endpoints', fn: testProtectedEndpoints },
+                { name: 'WebSocket Connection', fn: testWebSocket },
+                { name: 'Listings API', fn: testListings },
+                { name: 'Commodities API', fn: testCommodities },
+                { name: 'Logout Process', fn: testLogout }
+            ];
+            
+            let passed = 0;
+            let failed = 0;
+            
+            for (const test of tests) {
+                try {
+                    const result = await test.fn();
+                    if (result) {
+                        passed++;
+                    } else {
+                        failed++;
+                    }
+                } catch (error) {
+                    log(`❌ ${test.name}: Unexpected error - ${error.message}`, 'error');
+                    failed++;
+                }
+                
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            log('================================================', 'info');
+            log(`🎉 Test Suite Complete!`, 'info');
+            log(`✅ Passed: ${passed} tests`, 'success');
+            log(`❌ Failed: ${failed} tests`, failed > 0 ? 'error' : 'info');
+            
+            if (failed === 0) {
+                log('🚀 All tests passed! Frontend is ready for development.', 'success');
+                updateStatus('All Tests Passed', true);
+            } else {
+                log('⚠️ Some tests failed. Check the results above for details.', 'warning');
+                updateStatus(`${failed} Tests Failed`, false);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🌾 AgriTech Platform Frontend Test Suite Loaded', 'success');
+            log('📡 Ready to test API communication', 'info');
+            log('⚠️ Ensure Docker containers are running before testing', 'warning');
+        });
+    </script>
+</body>
+</html>

@@ -145,6 +145,48 @@ class WebSocketManager:
 ws_manager = WebSocketManager()
 
 
+@router.websocket("/ws")
+async def websocket_test_endpoint(websocket: WebSocket):
+    """Basic WebSocket endpoint for testing connectivity"""
+    await websocket.accept()
+    try:
+        await websocket.send_text(json.dumps({
+            "type": "connection_established",
+            "message": "WebSocket connection successful",
+            "timestamp": datetime.now().isoformat()
+        }))
+        
+        while True:
+            # Wait for messages from client
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                if message.get("type") == "ping":
+                    await websocket.send_text(json.dumps({
+                        "type": "pong",
+                        "message": "WebSocket is working",
+                        "timestamp": datetime.now().isoformat()
+                    }))
+                else:
+                    await websocket.send_text(json.dumps({
+                        "type": "echo",
+                        "message": f"Received: {data}",
+                        "timestamp": datetime.now().isoformat()
+                    }))
+            except json.JSONDecodeError:
+                await websocket.send_text(json.dumps({
+                    "type": "error",
+                    "message": "Invalid JSON format",
+                    "timestamp": datetime.now().isoformat()
+                }))
+                
+    except WebSocketDisconnect:
+        logger.info("WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+        await websocket.close()
+
+
 @router.websocket("/ws/auction/{commodity_id}")
 async def websocket_auction_endpoint(
     websocket: WebSocket,
