@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, Query, Path, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
 from uuid import UUID
+import logging
 
 from app.api.dependencies import get_current_user
 from app.api.middleware import require_admin_role
@@ -9,6 +11,7 @@ from app.db.models.accounts import User
 from app.db.managers.commodities import commodity_listing_manager
 from app.db.managers.accounts import user_manager
 from app.db.managers.listings import stats_manager
+from app.db.managers.base import BaseManager
 from app.api.schemas.commodities import (
     CommodityListResponseSchema,
     CommodityApprovalSchema,
@@ -26,6 +29,7 @@ from app.api.schemas.admin import (
 )
 from app.common.exception_handlers import RequestError
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -58,22 +62,41 @@ async def approve_commodity(
     current_user: User = Depends(require_admin_role),
     db: AsyncSession = Depends(get_db),
 ):
-    """Approve or reject a commodity listing"""
-    commodity = await commodity_listing_manager.get_by_id(db, commodity_id)
-    if not commodity:
+    """Approve or reject a commodity listing with proper transaction handling"""
+    try:
+        async with db.begin():  # Explicit transaction
+            commodity = await commodity_listing_manager.get_by_id(db, commodity_id)
+            if not commodity:
+                raise RequestError(
+                    err_msg="Commodity not found",
+                    status_code=404,
+                    data={"detail": "Commodity with this ID does not exist"}
+                )
+            
+            await commodity_listing_manager.approve_listing(db, commodity_id, data.is_approved)
+            # Transaction commits automatically here
+            
+        status = "approved" if data.is_approved else "rejected"
+        return {
+            "message": f"Commodity {status} successfully",
+            "data": {"commodity_id": commodity_id, "is_approved": data.is_approved}
+        }
+    except SQLAlchemyError as e:
+        logger.error(f"Database error in approve_commodity: {e}")
         raise RequestError(
-            err_msg="Commodity not found",
-            status_code=404,
-            data={"detail": "Commodity with this ID does not exist"}
+            err_msg="Database operation failed",
+            status_code=500,
+            data={"detail": "Failed to process commodity approval"}
         )
-    
-    await commodity_listing_manager.approve_listing(db, commodity_id, data.is_approved)
-    
-    status = "approved" if data.is_approved else "rejected"
-    return {
-        "message": f"Commodity {status} successfully",
-        "data": {"commodity_id": commodity_id, "is_approved": data.is_approved}
-    }
+    except RequestError:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error in approve_commodity: {e}")
+        raise RequestError(
+            err_msg="Operation failed",
+            status_code=500,
+            data={"detail": "An unexpected error occurred"}
+        )
 
 
 # User Management Endpoints
@@ -129,14 +152,29 @@ async def get_user_details(
     db: AsyncSession = Depends(get_db),
 ):
     """Get detailed user information with statistics"""
-    user_data = await user_manager.get_user_with_stats(db, user_id)
-    if not user_data:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    return {
-        "message": "User details retrieved successfully",
-        "data": user_data
-    }
+    try:
+        # Get user details with stats
+        user_data = await user_manager.get_user_with_stats(db, user_id)
+        if not user_data:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Create UserDetail model to validate the data
+        from app.api.schemas.admin import UserDetail
+        user_detail = UserDetail(**user_data)
+        
+        return UserDetailResponse(
+            message="User details retrieved successfully",
+            data=user_detail
+        ).dict()
+    except ValueError as e:
+        # Handle validation errors
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        # Log unexpected errors and return 500
+        import traceback
+        print(f"Error in get_user_details: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.patch(

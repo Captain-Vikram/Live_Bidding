@@ -82,25 +82,34 @@ class UserManager(BaseManager[User]):
             select(func.count(Bid.id)).where(Bid.user_id == user_id)
         )
         
-        user_dict = {
-            "id": user.id,
-            "email": user.email,
-            "full_name": user.full_name,
-            "role": user.role.value if hasattr(user.role, 'value') else str(user.role),
-            "is_verified": user.is_verified,
-            "is_active": user.is_email_verified,  # Using is_email_verified as is_active
-            "created_at": user.created_at,
-            "last_login": user.updated_at,  # Using updated_at as last_login approximation
-            "phone_number": user.phone_number,
-            "profile_picture": user.avatar.file_name if user.avatar else None,
-            "address": None,  # Address field doesn't exist in current model
-            "total_listings": listings_count.scalar() or 0,
-            "total_bids": bids_count.scalar() or 0,
-            "total_purchases": 0  # You can add purchase tracking later
-        }
-        
-        return user_dict
-    
+        # Safely build user dictionary with all required fields
+        try:
+            role_value = getattr(user.role, 'value', None)
+            if not role_value:
+                # If no role value, get string representation and normalize it
+                role_value = str(user.role).upper()
+            
+            user_dict = {
+                "id": user.id,  # Pydantic will handle UUID conversion
+                "email": user.email,
+                "full_name": getattr(user, 'full_name', "") or "",
+                "role": role_value,  # This should be a string value from the UserRole enum
+                "is_verified": getattr(user, 'is_verified', False),
+                "is_active": getattr(user, 'is_email_verified', False),
+                "created_at": user.created_at,
+                "last_login": getattr(user, 'updated_at', None),
+                "phone_number": getattr(user, 'phone_number', None),
+                "profile_picture": getattr(getattr(user, 'avatar', None), 'file_name', None),
+                "address": None,  # Reserved for future use
+                "total_listings": listings_count.scalar() or 0,
+                "total_bids": bids_count.scalar() or 0,
+                "total_purchases": 0  # Reserved for future use
+            }
+            return user_dict
+        except Exception as e:
+            print(f"Error in get_user_with_stats: {str(e)}")
+            raise
+            
     async def delete_user(self, db: AsyncSession, user_id: UUID) -> bool:
         """Soft delete a user by marking email as unverified"""
         user = await self.get_by_id(db, user_id)
@@ -150,6 +159,3 @@ class JwtManager(BaseManager[Jwt]):
 user_manager = UserManager(User)
 otp_manager = OtpManager(Otp)
 jwt_manager = JwtManager(Jwt)
-
-
-# this can now be used to perform any available crud actions e.g user_manager.get_by_id(db=db, id=id)

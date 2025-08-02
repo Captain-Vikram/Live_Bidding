@@ -1,0 +1,68 @@
+{
+  "health_checks": {
+    "api_health": {
+      "status": 200,
+      "response": {
+        "success": "pong!"
+      },
+      "success": true
+    },
+    "db_health": {
+      "status": 200,
+      "response": {
+        "database_status": "healthy",
+        "success": true
+      },
+      "success": true
+    },
+    "redis_health": {
+      "status": 200,
+      "response": {
+        "redis_status": "healthy",
+        "success": true
+      },
+      "success": true
+    }
+  },
+  "basic_operations": {
+    "categories": {
+      "status": 405,
+      "count": 0,
+      "success": false
+    },
+    "listings": {
+      "status": 200,
+      "count": 6,
+      "success": true
+    }
+  },
+  "transaction_tests": {
+    "user_registration": {
+      "status": 422,
+      "response": "{\"status\":\"failure\",\"message\":\"Invalid Entry\",\"data\":{\"terms_agreement\":\"field required\",\"role\":\"value is not a valid enumeration member; permitted: 'FARMER', 'TRADER', 'ADMIN'\"}}",
+      "success": false
+    },
+    "newsletter": {
+      "status": 405,
+      "response": "{\"detail\":\"Method Not Allowed\"}",
+      "success": false
+    }
+  },
+  "error_handling": {
+    "invalid_endpoint": {
+      "status": 405,
+      "success": false
+    },
+    "invalid_data": {
+      "status": 422,
+      "success": true
+    }
+  },
+  "summary": {
+    "total_tests": 9,
+    "passed_tests": 5,
+    "failed_tests": 4,
+    "success_rate": 55.55555555555556,
+    "overall_success": false
+  }
+}

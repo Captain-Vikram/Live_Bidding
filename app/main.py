@@ -12,6 +12,7 @@ from app.api.routers import main_router
 from app.common.exception_handlers import exc_handlers
 from app.core.config import settings
 from app.core.redis import redis_manager
+from app.core.database import check_db_connection
 from app.middleware.security_middleware import setup_security_middleware
 import logging
 
@@ -105,17 +106,25 @@ async def root():
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize Redis connection on startup"""
+    """Initialize connections on startup"""
     try:
+        # Check database connection
+        db_healthy = await check_db_connection()
+        if db_healthy:
+            logger.info("Database connected successfully")
+        else:
+            logger.error("Database connection failed during startup")
+        
+        # Initialize Redis connection
         await redis_manager.connect()
         logger.info("Redis connected successfully")
     except Exception as e:
-        logger.warning(f"Redis connection failed: {e}")
+        logger.warning(f"Startup connection issues: {e}")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Cleanup Redis connection on shutdown"""
+    """Cleanup connections on shutdown"""
     try:
         await redis_manager.disconnect()
         logger.info("Redis disconnected successfully")
@@ -126,6 +135,23 @@ async def shutdown_event():
 @app.get("/api/v6/healthcheck", name="Healthcheck", tags=["Healthcheck"])
 async def healthcheck():
     return {"success": "pong!"}
+
+
+@app.get("/api/v6/db-health", name="Database Health", tags=["Healthcheck"])
+async def db_health():
+    """Check Database connectivity"""
+    try:
+        is_healthy = await check_db_connection()
+        return {
+            "database_status": "healthy" if is_healthy else "unhealthy",
+            "success": is_healthy
+        }
+    except Exception as e:
+        return {
+            "database_status": "error",
+            "error": str(e),
+            "success": False
+        }
 
 
 @app.get("/api/v6/redis-health", name="Redis Health", tags=["Healthcheck"])

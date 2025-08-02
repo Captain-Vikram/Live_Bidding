@@ -150,5 +150,22 @@ class Settings(BaseSettings):
         env_file = f"{PROJECT_DIR}/.env"
         case_sensitive = True
 
+    # Database Configuration Enhancement
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 20,
+        "max_overflow": 30,
+        "pool_pre_ping": True,
+        "pool_recycle": 3600,
+        "connect_args": {
+            "server_settings": {
+                "application_name": "bidout_auction_api",
+            }
+        }
+    }
+
+    # Connection retry settings
+    DB_RETRY_COUNT: int = 3
+    DB_RETRY_DELAY: float = 1.0
+
 
 settings: Settings = Settings()

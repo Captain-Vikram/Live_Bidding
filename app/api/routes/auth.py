@@ -43,22 +43,29 @@ async def register(
     data: RegisterUserSchema,
     db: AsyncSession = Depends(get_db),
 ) -> RegisterResponseSchema:
-    # Check for existing user
-    existing_user = await user_manager.get_by_email(db, data.email)
-    if existing_user:
-        raise RequestError(
-            err_msg="Invalid Entry",
-            status_code=422,
-            data={"email": "Email already registered!"},
-        )
+    try:
+        # Check for existing user
+        existing_user = await user_manager.get_by_email(db, data.email)
+        if existing_user:
+            raise RequestError(
+                err_msg="Invalid Entry",
+                status_code=422,
+                data={"email": "Email already registered!"},
+            )
 
-    # Create user
-    user = await user_manager.create(db, data.dict())
+        # Create user
+        user = await user_manager.create(db, data.dict())
+        
+        # Explicitly commit the transaction
+        await db.commit()
 
-    # Send verification email
-    await send_email(background_tasks, db, user, "activate")
+        # Send verification email
+        await send_email(background_tasks, db, user, "activate")
 
-    return {"message": "Registration successful", "data": {"email": user.email}}
+        return {"message": "Registration successful", "data": {"email": user.email}}
+    except Exception as e:
+        await db.rollback()
+        raise
 
 
 @router.post(
@@ -186,19 +193,44 @@ async def login(
 
     if not user.is_email_verified:
         raise RequestError(err_msg="Verify your email first", status_code=401)
-    await jwt_manager.delete_by_user_id(db, user.id)
+    
+    try:
+        await jwt_manager.delete_by_user_id(db, user.id)
 
-    # Create tokens and store in jwt model
-    access = await Authentication.create_access_token({"user_id": str(user.id)})
-    refresh = await Authentication.create_refresh_token()
-    await jwt_manager.create(
-        db, {"user_id": user.id, "access": access, "refresh": refresh}
-    )
+        # Create tokens and store in jwt model
+        access = await Authentication.create_access_token({"user_id": str(user.id)})
+        refresh = await Authentication.create_refresh_token()
+        await jwt_manager.create(
+            db, {"user_id": user.id, "access": access, "refresh": refresh}
+        )
+        
+        # Explicit commit to ensure JWT token is saved
+        await db.commit()
 
-    # Move all guest user watchlists to the authenticated user watchlists
-    guest_user_watchlists = await watchlist_manager.get_by_session_key(
-        db, client.id if client else None, user.id
-    )
+        # Move all guest user watchlists to the authenticated user watchlists
+        guest_user_watchlists = await watchlist_manager.get_by_session_key(
+            db, client.id if client else None, user.id
+        )
+        if len(guest_user_watchlists) > 0:
+            data_to_create = [
+                {"user_id": user.id, "listing_id": listing_id}.copy()
+                for listing_id in guest_user_watchlists
+            ]
+            await watchlist_manager.bulk_create(db, data_to_create)
+
+        if isinstance(client, GuestUser):
+            # Delete client (Almost like clearing sessions)
+            await guestuser_manager.delete(db, client)
+            
+        # Final commit for any additional operations
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise RequestError(
+            err_msg="Login process failed",
+            status_code=500,
+            data={"detail": f"Authentication error: {str(e)}"}
+        )
     if len(guest_user_watchlists) > 0:
         data_to_create = [
             {"user_id": user.id, "listing_id": listing_id}.copy()

@@ -1,0 +1,951 @@
+{
+  "api_version": "6.0.0",
+  "generated_at": "2025-08-02T12:00:00.000000",
+  "base_url": "http://localhost:8000",
+  "title": "AgriTech Platform - Complete API Schema v6.0.0",
+  "description": "Comprehensive API schema for the AgriTech auction platform with ML recommendations, real-time bidding, and mobile support",
+  "cors_enabled": ["localhost:3000", "localhost:3001", "localhost:8080"],
+  "rate_limiting": {
+    "requests_per_hour": 1000,
+    "requests_per_minute": 60
+  },
+  "authentication": {
+    "type": "Bearer JWT",
+    "header": "Authorization: Bearer <token>",
+    "token_expiry": "24 hours"
+  },
+  "security_features": {
+    "rate_limiting": true,
+    "audit_logging": true,
+    "input_validation": true,
+    "sql_injection_protection": true,
+    "password_hashing": "bcrypt"
+  },
+  "user_roles": ["FARMER", "TRADER", "ADMIN", "AUCTIONEER"],
+  "total_endpoints": 75,
+  "endpoint_categories": [
+    "Authentication",
+    "Listings",
+    "Seller/Farmer",
+    "Auctioneer", 
+    "Bidding",
+    "Commodities",
+    "Admin",
+    "Price Tracking",
+    "ML Recommendations",
+    "Mobile & Notifications",
+    "General",
+    "Real-time",
+    "Health & Monitoring"
+  ],
+  "endpoints": [
+    {
+      "category": "Authentication",
+      "base_path": "/api/v6/auth",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/register",
+          "summary": "User Registration",
+          "description": "Register a new user with role-based access",
+          "auth_required": false,
+          "required_roles": [],
+          "request_schema": {
+            "type": "object",
+            "required": ["email", "password", "first_name", "last_name", "role", "terms_agreement"],
+            "properties": {
+              "email": {"type": "string", "format": "email"},
+              "password": {"type": "string", "minLength": 8},
+              "first_name": {"type": "string", "maxLength": 50},
+              "last_name": {"type": "string", "maxLength": 50},
+              "role": {"type": "string", "enum": ["FARMER", "TRADER", "ADMIN", "AUCTIONEER"]},
+              "terms_agreement": {"type": "boolean"},
+              "phone_number": {"type": "string"}
+            }
+          },
+          "response_codes": ["201", "400", "422"]
+        },
+        {
+          "method": "POST",
+          "path": "/login",
+          "summary": "User Login",
+          "description": "Authenticate user and receive JWT tokens",
+          "auth_required": false,
+          "required_roles": [],
+          "request_schema": {
+            "type": "object",
+            "required": ["email", "password"],
+            "properties": {
+              "email": {"type": "string", "format": "email"},
+              "password": {"type": "string"}
+            }
+          },
+          "response_codes": ["200", "400", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/logout",
+          "summary": "User Logout",
+          "description": "Logout user and invalidate tokens",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "POST",
+          "path": "/refresh",
+          "summary": "Refresh Tokens",
+          "description": "Refresh JWT access token",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "POST",
+          "path": "/request-otp",
+          "summary": "Request OTP",
+          "description": "Request OTP for password reset",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "400"]
+        },
+        {
+          "method": "POST",
+          "path": "/verify-otp",
+          "summary": "Verify OTP",
+          "description": "Verify OTP for password reset",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "400"]
+        },
+        {
+          "method": "POST",
+          "path": "/set-new-password",
+          "summary": "Reset Password",
+          "description": "Set new password after OTP verification",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "400"]
+        },
+        {
+          "method": "POST",
+          "path": "/verify-kyc/{user_id}",
+          "summary": "Verify User KYC",
+          "description": "Admin endpoint to verify user KYC",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403", "404"]
+        }
+      ]
+    },
+    {
+      "category": "Listings",
+      "base_path": "/api/v6/listings",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "summary": "Get All Listings",
+          "description": "Retrieve all active commodity listings",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "GET",
+          "path": "/{listing_id}",
+          "summary": "Get Listing Details",
+          "description": "Get detailed information about a specific listing",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/watchlist",
+          "summary": "Add to Watchlist",
+          "description": "Add listing to user watchlist",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["201", "400"]
+        },
+        {
+          "method": "DELETE",
+          "path": "/watchlist/{id}",
+          "summary": "Remove from Watchlist",
+          "description": "Remove listing from watchlist",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "GET",
+          "path": "/categories",
+          "summary": "Get All Categories",
+          "description": "Get all commodity categories",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "GET",
+          "path": "/categories/{slug}",
+          "summary": "Get Category Listings",
+          "description": "Get listings by category",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/bid",
+          "summary": "Place Bid",
+          "description": "Place a bid on a listing",
+          "auth_required": true,
+          "required_roles": ["TRADER"],
+          "request_schema": {
+            "type": "object",
+            "required": ["listing_id", "amount"],
+            "properties": {
+              "listing_id": {"type": "string", "format": "uuid"},
+              "amount": {"type": "number", "minimum": 0}
+            }
+          },
+          "response_codes": ["201", "400", "401", "403"]
+        }
+      ]
+    },
+    {
+      "category": "Seller/Farmer",
+      "base_path": "/api/v6/seller",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "summary": "Get Profile",
+          "description": "Get farmer profile information",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "PUT",
+          "path": "/",
+          "summary": "Update Profile",
+          "description": "Update farmer profile",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "400", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/listings",
+          "summary": "Get User Listings",
+          "description": "Get all listings created by farmer",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "POST",
+          "path": "/listings",
+          "summary": "Create Listing",
+          "description": "Create a new commodity listing",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "request_schema": {
+            "type": "object",
+            "required": ["name", "desc", "category", "price", "closing_date"],
+            "properties": {
+              "name": {"type": "string", "maxLength": 100},
+              "desc": {"type": "string"},
+              "category": {"type": "string"},
+              "price": {"type": "number", "minimum": 0},
+              "closing_date": {"type": "string", "format": "date-time"},
+              "quantity": {"type": "number", "minimum": 0},
+              "unit": {"type": "string"}
+            }
+          },
+          "response_codes": ["201", "400", "401", "403"]
+        },
+        {
+          "method": "PUT",
+          "path": "/listings/{id}",
+          "summary": "Update Listing",
+          "description": "Update existing listing",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "400", "401", "403", "404"]
+        },
+        {
+          "method": "DELETE",
+          "path": "/listings/{id}",
+          "summary": "Delete Listing",
+          "description": "Delete a listing",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "401", "403", "404"]
+        }
+      ]
+    },
+    {
+      "category": "Auctioneer",
+      "base_path": "/api/v6/auctioneer",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "summary": "Get Profile",
+          "description": "Get auctioneer profile",
+          "auth_required": true,
+          "required_roles": ["AUCTIONEER"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "PUT",
+          "path": "/",
+          "summary": "Update Profile",
+          "description": "Update auctioneer profile",
+          "auth_required": true,
+          "required_roles": ["AUCTIONEER"],
+          "response_codes": ["200", "400", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/listings",
+          "summary": "Get Managed Listings",
+          "description": "Get listings managed by auctioneer",
+          "auth_required": true,
+          "required_roles": ["AUCTIONEER"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "POST",
+          "path": "/listings",
+          "summary": "Create General Listing", 
+          "description": "Create general auction listing",
+          "auth_required": true,
+          "required_roles": ["AUCTIONEER"],
+          "response_codes": ["201", "400", "401", "403"]
+        }
+      ]
+    },
+    {
+      "category": "Bidding",
+      "base_path": "/api/v6/bidding",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/place-bid",
+          "summary": "Place Bid",
+          "description": "Place bid on commodity",
+          "auth_required": true,
+          "required_roles": ["TRADER"],
+          "response_codes": ["201", "400", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/my-bids",
+          "summary": "Get User Bids",
+          "description": "Get all bids placed by user",
+          "auth_required": true,
+          "required_roles": ["TRADER"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/listing/{id}/bids",
+          "summary": "Get Listing Bids",
+          "description": "Get all bids for a listing",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/auto-bid",
+          "summary": "Set Auto Bidding",
+          "description": "Enable automatic bidding",
+          "auth_required": true,
+          "required_roles": ["TRADER"],
+          "response_codes": ["201", "400", "401", "403"]
+        }
+      ]
+    },
+    {
+      "category": "Commodities",
+      "base_path": "/api/v6/commodities",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "summary": "Get Approved Commodities",
+          "description": "Get all approved commodities",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "GET",
+          "path": "/{id}",
+          "summary": "Get Commodity Details",
+          "description": "Get detailed commodity information",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/",
+          "summary": "Create Commodity",
+          "description": "Create new commodity for approval",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "request_schema": {
+            "type": "object",
+            "required": ["commodity_name", "description", "quantity_kg", "min_price", "harvest_date", "closing_date"],
+            "properties": {
+              "commodity_name": {"type": "string"},
+              "description": {"type": "string"},
+              "quantity_kg": {"type": "number", "minimum": 0},
+              "min_price": {"type": "number", "minimum": 0},
+              "harvest_date": {"type": "string", "format": "date"},
+              "closing_date": {"type": "string", "format": "date-time"},
+              "quality_grade": {"type": "string"},
+              "storage_location": {"type": "string"}
+            }
+          },
+          "response_codes": ["201", "400", "401", "403"]
+        },
+        {
+          "method": "PUT",
+          "path": "/{id}",
+          "summary": "Update Commodity",
+          "description": "Update commodity information",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "400", "401", "403", "404"]
+        },
+        {
+          "method": "DELETE",
+          "path": "/{id}",
+          "summary": "Delete Commodity",
+          "description": "Delete commodity",
+          "auth_required": true,
+          "required_roles": ["FARMER"],
+          "response_codes": ["200", "401", "403", "404"]
+        }
+      ]
+    },
+    {
+      "category": "Admin",
+      "base_path": "/api/v6/admin",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/users",
+          "summary": "List All Users",
+          "description": "Get paginated list of all users",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/users/{id}",
+          "summary": "Get User Details",
+          "description": "Get detailed user information",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403", "404"]
+        },
+        {
+          "method": "PATCH",
+          "path": "/users/{id}/verification",
+          "summary": "Update User Verification",
+          "description": "Update user verification status",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "400", "401", "403", "404"]
+        },
+        {
+          "method": "DELETE",
+          "path": "/users/{id}",
+          "summary": "Delete User",
+          "description": "Delete user account",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403", "404"]
+        },
+        {
+          "method": "GET",
+          "path": "/pending-commodities/",
+          "summary": "Get Pending Approvals",
+          "description": "Get commodities pending approval",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "POST",
+          "path": "/approve-commodity/{id}",
+          "summary": "Approve/Reject Commodity",
+          "description": "Approve or reject commodity",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "400", "401", "403", "404"]
+        },
+        {
+          "method": "GET",
+          "path": "/active-bids",
+          "summary": "Get Active Bids Stats",
+          "description": "Get statistics on active bids",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/commodities/count",
+          "summary": "Get Commodities Stats",
+          "description": "Get commodity statistics",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/stats/platform",
+          "summary": "Get Platform Stats",
+          "description": "Get comprehensive platform statistics",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "401", "403"]
+        }
+      ]
+    },
+    {
+      "category": "Price Tracking",
+      "base_path": "/api/v6/price-tracking",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/history/{commodity}",
+          "summary": "Get Price History",
+          "description": "Get historical price data",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/alerts",
+          "summary": "Create Price Alert",
+          "description": "Create price alert notification",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "request_schema": {
+            "type": "object",
+            "required": ["commodity_slug", "threshold_price", "direction"],
+            "properties": {
+              "commodity_slug": {"type": "string"},
+              "threshold_price": {"type": "number", "minimum": 0},
+              "direction": {"type": "string", "enum": ["ABOVE", "BELOW"]},
+              "notify_email": {"type": "boolean"},
+              "notify_sms": {"type": "boolean"}
+            }
+          },
+          "response_codes": ["201", "400", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/alerts",
+          "summary": "Get User Alerts",
+          "description": "Get all user price alerts",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "PUT",
+          "path": "/alerts/{id}",
+          "summary": "Update Alert",
+          "description": "Update price alert",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "400", "401", "404"]
+        },
+        {
+          "method": "DELETE",
+          "path": "/alerts/{id}",
+          "summary": "Delete Alert",
+          "description": "Delete price alert",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401", "404"]
+        },
+        {
+          "method": "GET",
+          "path": "/statistics/{commodity}",
+          "summary": "Get Price Statistics",
+          "description": "Get price analytics and statistics",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "404"]
+        },
+        {
+          "method": "GET",
+          "path": "/trending",
+          "summary": "Get Trending Commodities",
+          "description": "Get trending commodities by price movement",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "GET",
+          "path": "/dashboard",
+          "summary": "Get Dashboard Summary",
+          "description": "Get price tracking dashboard data",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/notifications",
+          "summary": "Get Notifications",
+          "description": "Get price alert notifications",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "POST",
+          "path": "/notifications/mark-read",
+          "summary": "Mark Notifications Read",
+          "description": "Mark notifications as read",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        }
+      ]
+    },
+    {
+      "category": "ML Recommendations",
+      "base_path": "/api/v6/ml",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/suggestions/{commodity_slug}",
+          "summary": "Get AI Trading Recommendation",
+          "description": "Get ML-powered trading recommendation",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_schema": {
+            "200": {
+              "suggestion": "string (BUY|SELL|HOLD)",
+              "confidence": "number (0-1)",
+              "current_price": "number",
+              "predicted_price": "number",
+              "reasoning": "string",
+              "risk_level": "string (low|medium|high)"
+            }
+          },
+          "response_codes": ["200", "401", "404"]
+        },
+        {
+          "method": "GET",
+          "path": "/market-overview",
+          "summary": "Get Market Overview",
+          "description": "Get AI-powered market analysis",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/price-prediction/{commodity}",
+          "summary": "Get Price Prediction",
+          "description": "Get ML price predictions",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/feedback",
+          "summary": "Submit ML Feedback",
+          "description": "Submit feedback for ML model improvement",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["201", "400", "401"]
+        }
+      ]
+    },
+    {
+      "category": "Mobile & Notifications",
+      "base_path": "/api/v6/mobile",
+      "routes": [
+        {
+          "method": "POST",
+          "path": "/register-device",
+          "summary": "Register Mobile Device",
+          "description": "Register device for push notifications",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["201", "400", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/devices",
+          "summary": "Get User Devices",
+          "description": "Get registered devices for user",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "DELETE",
+          "path": "/devices/{id}",
+          "summary": "Unregister Device",
+          "description": "Remove device from notifications",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401", "404"]
+        },
+        {
+          "method": "POST",
+          "path": "/push-notification",
+          "summary": "Send Push Notification",
+          "description": "Send push notification to users",
+          "auth_required": true,
+          "required_roles": ["ADMIN"],
+          "response_codes": ["200", "400", "401", "403"]
+        },
+        {
+          "method": "GET",
+          "path": "/notification-history",
+          "summary": "Get Notification History",
+          "description": "Get user notification history",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "POST",
+          "path": "/notification-preferences",
+          "summary": "Update Preferences",
+          "description": "Update notification preferences",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "400", "401"]
+        },
+        {
+          "method": "POST",
+          "path": "/activity",
+          "summary": "Log User Activity",
+          "description": "Log user activity for analytics",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["201", "400", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/activity/summary",
+          "summary": "Get Activity Summary",
+          "description": "Get user activity summary",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        },
+        {
+          "method": "POST",
+          "path": "/location",
+          "summary": "Update User Location",
+          "description": "Update user location data",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "400", "401"]
+        },
+        {
+          "method": "GET",
+          "path": "/locations",
+          "summary": "Get User Locations",
+          "description": "Get user location history",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "response_codes": ["200", "401"]
+        }
+      ]
+    },
+    {
+      "category": "General",
+      "base_path": "/api/v6/general",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/site-detail",
+          "summary": "Get Site Details",
+          "description": "Get general site information",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "POST",
+          "path": "/subscribe",
+          "summary": "Newsletter Subscribe",
+          "description": "Subscribe to newsletter",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["201", "400"]
+        },
+        {
+          "method": "GET",
+          "path": "/reviews",
+          "summary": "Get Platform Reviews",
+          "description": "Get platform reviews and testimonials",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "POST",
+          "path": "/upload-image",
+          "summary": "Upload Image",
+          "description": "Upload image files",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["201", "400"]
+        }
+      ]
+    },
+    {
+      "category": "Real-time",
+      "base_path": "/api/v6/realtime",
+      "routes": [
+        {
+          "method": "WebSocket",
+          "path": "/ws",
+          "summary": "Basic WebSocket Test",
+          "description": "Basic WebSocket connection test",
+          "auth_required": false,
+          "required_roles": [],
+          "connection_type": "WebSocket"
+        },
+        {
+          "method": "WebSocket", 
+          "path": "/ws/auction/{commodity_id}",
+          "summary": "Real-time Auction Updates",
+          "description": "Real-time bidding updates via WebSocket",
+          "auth_required": true,
+          "required_roles": ["ALL"],
+          "connection_type": "WebSocket",
+          "message_types": ["bid_update", "auction_status", "price_change"]
+        }
+      ]
+    },
+    {
+      "category": "Health & Monitoring",
+      "base_path": "/",
+      "routes": [
+        {
+          "method": "GET",
+          "path": "/",
+          "summary": "Root API Info",
+          "description": "Basic API information",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "GET",
+          "path": "/api/v6/healthcheck",
+          "summary": "API Health Check",
+          "description": "Check API health status",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "503"]
+        },
+        {
+          "method": "GET",
+          "path": "/api/v6/redis-health",
+          "summary": "Redis Health Check",
+          "description": "Check Redis connection health",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200", "503"]
+        },
+        {
+          "method": "GET",
+          "path": "/docs",
+          "summary": "API Documentation",
+          "description": "Interactive API documentation (Swagger)",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        },
+        {
+          "method": "GET",
+          "path": "/openapi.json",
+          "summary": "OpenAPI Schema",
+          "description": "OpenAPI JSON schema",
+          "auth_required": false,
+          "required_roles": [],
+          "response_codes": ["200"]
+        }
+      ]
+    }
+  ],
+  "standard_response_format": {
+    "success": {
+      "status": "success",
+      "message": "string",
+      "data": "object"
+    },
+    "error": {
+      "status": "error", 
+      "message": "string",
+      "details": "object (optional)"
+    }
+  },
+  "common_error_codes": {
+    "200": "Success - Operation completed successfully",
+    "201": "Created - Resource created successfully",
+    "400": "Bad Request - Invalid input data or parameters",
+    "401": "Unauthorized - Invalid or missing authentication token",
+    "403": "Forbidden - Insufficient permissions for this operation",
+    "404": "Not Found - Requested resource does not exist",
+    "422": "Validation Error - Request data failed schema validation",
+    "429": "Rate Limited - Too many requests, rate limit exceeded",
+    "500": "Server Error - Internal server error occurred"
+  },
+  "websocket_message_format": {
+    "type": "string (bid_update|auction_status|price_change)",
+    "event": "string",
+    "data": "object",
+    "timestamp": "string (ISO 8601)"
+  },
+  "changelog": {
+    "6.0.0": [
+      "Added ML-powered trading recommendations",
+      "Implemented advanced price tracking and alerts",
+      "Added real-time bidding with WebSocket support",
+      "Enhanced mobile device management",
+      "Improved security with comprehensive audit logging",
+      "Added admin management dashboard",
+      "Implemented comprehensive API testing suite"
+    ],
+    "5.0.0": [
+      "Added price history tracking",
+      "Implemented alert subscription system",
+      "Enhanced notification system"
+    ],
+    "4.0.0": [
+      "Added real-time bidding system",
+      "Implemented WebSocket connections"
+    ]
+  },
+  "last_updated": "2025-08-02T12:00:00.000Z"
+}

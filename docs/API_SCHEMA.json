@@ -1,73 +1,45 @@
 {
   "api_version": "6.0.0",
-  "generated_at": "2025-07-20T16:52:22.237644",
+  "generated_at": "2025-08-02T12:00:00.000000",
   "base_url": "http://localhost:8000",
+  "title": "AgriTech Platform - Complete API Schema",
+  "description": "Comprehensive API schema for the AgriTech auction platform with ML recommendations, real-time bidding, and mobile support",
+  "cors_enabled": ["localhost:3000", "localhost:3001", "localhost:8080"],
+  "rate_limiting": {
+    "requests_per_hour": 1000,
+    "requests_per_minute": 60
+  },
+  "authentication": {
+    "type": "Bearer JWT",
+    "header": "Authorization: Bearer <token>",
+    "token_expiry": "24 hours"
+  },
+  "total_endpoints": 75,
   "endpoints": [
     {
       "method": "POST",
-      "path": "/api/v1/auth/register",
+      "path": "/api/v6/auth/register",
       "summary": "User Registration",
-      "description": "Register a new user with role-based access (farmer, trader, admin)",
-      "tags": [
-        "Authentication"
-      ],
+      "description": "Register a new user with role-based access (FARMER, TRADER, ADMIN, AUCTIONEER)",
+      "tags": ["Authentication"],
       "auth_required": false,
       "required_roles": [],
       "request_schema": {
         "type": "object",
-        "required": [
-          "email",
-          "password",
-          "first_name",
-          "last_name",
-          "role",
-          "terms_agreement"
-        ],
+        "required": ["email", "password", "first_name", "last_name", "role", "terms_agreement"],
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8
-          },
-          "first_name": {
-            "type": "string",
-            "maxLength": 50
-          },
-          "last_name": {
-            "type": "string",
-            "maxLength": 50
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "farmer",
-              "trader",
-              "admin"
-            ]
-          },
-          "terms_agreement": {
-            "type": "boolean"
-          },
-          "upi_id": {
-            "type": "string"
-          },
-          "bank_account": {
-            "type": "string"
-          },
-          "ifsc_code": {
-            "type": "string"
-          },
-          "avatar_id": {
-            "type": "string",
-            "format": "uuid"
-          }
+          "email": {"type": "string", "format": "email"},
+          "password": {"type": "string", "minLength": 8},
+          "first_name": {"type": "string", "maxLength": 50},
+          "last_name": {"type": "string", "maxLength": 50},
+          "role": {"type": "string", "enum": ["FARMER", "TRADER", "ADMIN", "AUCTIONEER"]},
+          "terms_agreement": {"type": "boolean"},
+          "phone_number": {"type": "string"}
         }
       },
       "response_schema": {
         "201": {
+          "status": "success",
           "message": "Registration successful",
           "data": {
             "user": {
@@ -82,68 +54,29 @@
         }
       },
       "error_codes": [
-        {
-          "code": 400,
-          "description": "Validation error or email already exists"
-        },
-        {
-          "code": 422,
-          "description": "Invalid input data format"
-        }
-      ],
-      "example_request": {
-        "email": "farmer@agritech.com",
-        "password": "SecurePass123!",
-        "first_name": "John",
-        "last_name": "Farmer",
-        "role": "farmer",
-        "terms_agreement": true,
-        "upi_id": "john@paytm",
-        "bank_account": "1234567890123456",
-        "ifsc_code": "HDFC0001234"
-      },
-      "example_response": {
-        "message": "Registration successful",
-        "data": {
-          "user": {
-            "id": "123e4567-e89b-12d3-a456-426614174000",
-            "email": "farmer@agritech.com",
-            "first_name": "John",
-            "last_name": "Farmer",
-            "role": "farmer",
-            "is_verified": false
-          }
-        }
-      }
+        {"code": 400, "description": "Validation error or email already exists"},
+        {"code": 422, "description": "Invalid input data format"}
+      ]
     },
     {
       "method": "POST",
-      "path": "/api/v1/auth/login",
+      "path": "/api/v6/auth/login",
       "summary": "User Login",
-      "description": "Authenticate user and receive access tokens",
-      "tags": [
-        "Authentication"
-      ],
+      "description": "Authenticate user and receive JWT access tokens",
+      "tags": ["Authentication"],
       "auth_required": false,
       "required_roles": [],
       "request_schema": {
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string"
-          }
+          "email": {"type": "string", "format": "email"},
+          "password": {"type": "string"}
         }
       },
       "response_schema": {
         "200": {
+          "status": "success",
           "message": "Login successful",
           "data": {
             "access_token": "string",
