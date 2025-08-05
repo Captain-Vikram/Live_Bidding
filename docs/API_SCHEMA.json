@@ -1,10 +1,10 @@
 {
   "api_version": "6.0.0",
-  "generated_at": "2025-08-02T12:00:00.000000",
+  "generated_at": "2025-08-05T12:00:00.000000",
   "base_url": "http://localhost:8000",
   "title": "AgriTech Platform - Complete API Schema",
   "description": "Comprehensive API schema for the AgriTech auction platform with ML recommendations, real-time bidding, and mobile support",
-  "cors_enabled": ["localhost:3000", "localhost:3001", "localhost:8080"],
+  "cors_enabled": "Any localhost port (development), specific origins (production)",
   "rate_limiting": {
     "requests_per_hour": 1000,
     "requests_per_minute": 60
@@ -20,7 +20,7 @@
       "method": "POST",
       "path": "/api/v6/auth/register",
       "summary": "User Registration",
-      "description": "Register a new user with role-based access (FARMER, TRADER, ADMIN, AUCTIONEER)",
+      "description": "Register a new user with role-based access (FARMER, TRADER, ADMIN)",
       "tags": ["Authentication"],
       "auth_required": false,
       "required_roles": [],
@@ -32,7 +32,7 @@
           "password": {"type": "string", "minLength": 8},
           "first_name": {"type": "string", "maxLength": 50},
           "last_name": {"type": "string", "maxLength": 50},
-          "role": {"type": "string", "enum": ["FARMER", "TRADER", "ADMIN", "AUCTIONEER"]},
+          "role": {"type": "string", "enum": ["FARMER", "TRADER"]},
           "terms_agreement": {"type": "boolean"},
           "phone_number": {"type": "string"}
         }

@@ -1,10 +1,10 @@
 {
   "api_version": "6.0.0",
-  "generated_at": "2025-08-02T12:00:00.000000",
+  "generated_at": "2025-08-05T12:00:00.000000",
   "base_url": "http://localhost:8000",
   "title": "AgriTech Platform - Complete API Schema v6.0.0",
   "description": "Comprehensive API schema for the AgriTech auction platform with ML recommendations, real-time bidding, and mobile support",
-  "cors_enabled": ["localhost:3000", "localhost:3001", "localhost:8080"],
+  "cors_enabled": "Any localhost port (development), specific origins (production)",
   "rate_limiting": {
     "requests_per_hour": 1000,
     "requests_per_minute": 60
@@ -21,13 +21,12 @@
     "sql_injection_protection": true,
     "password_hashing": "bcrypt"
   },
-  "user_roles": ["FARMER", "TRADER", "ADMIN", "AUCTIONEER"],
+  "user_roles": ["FARMER", "TRADER", "ADMIN"],
   "total_endpoints": 75,
   "endpoint_categories": [
     "Authentication",
     "Listings",
     "Seller/Farmer",
-    "Auctioneer", 
     "Bidding",
     "Commodities",
     "Admin",
@@ -58,7 +57,7 @@
               "password": {"type": "string", "minLength": 8},
               "first_name": {"type": "string", "maxLength": 50},
               "last_name": {"type": "string", "maxLength": 50},
-              "role": {"type": "string", "enum": ["FARMER", "TRADER", "ADMIN", "AUCTIONEER"]},
+              "role": {"type": "string", "enum": ["FARMER", "TRADER"]},
               "terms_agreement": {"type": "boolean"},
               "phone_number": {"type": "string"}
             }
@@ -285,48 +284,6 @@
           "auth_required": true,
           "required_roles": ["FARMER"],
           "response_codes": ["200", "401", "403", "404"]
-        }
-      ]
-    },
-    {
-      "category": "Auctioneer",
-      "base_path": "/api/v6/auctioneer",
-      "routes": [
-        {
-          "method": "GET",
-          "path": "/",
-          "summary": "Get Profile",
-          "description": "Get auctioneer profile",
-          "auth_required": true,
-          "required_roles": ["AUCTIONEER"],
-          "response_codes": ["200", "401", "403"]
-        },
-        {
-          "method": "PUT",
-          "path": "/",
-          "summary": "Update Profile",
-          "description": "Update auctioneer profile",
-          "auth_required": true,
-          "required_roles": ["AUCTIONEER"],
-          "response_codes": ["200", "400", "401", "403"]
-        },
-        {
-          "method": "GET",
-          "path": "/listings",
-          "summary": "Get Managed Listings",
-          "description": "Get listings managed by auctioneer",
-          "auth_required": true,
-          "required_roles": ["AUCTIONEER"],
-          "response_codes": ["200", "401", "403"]
-        },
-        {
-          "method": "POST",
-          "path": "/listings",
-          "summary": "Create General Listing", 
-          "description": "Create general auction listing",
-          "auth_required": true,
-          "required_roles": ["AUCTIONEER"],
-          "response_codes": ["201", "400", "401", "403"]
         }
       ]
     },
@@ -947,5 +904,5 @@
       "Implemented WebSocket connections"
     ]
   },
-  "last_updated": "2025-08-02T12:00:00.000Z"
+  "last_updated": "2025-08-05T12:00:00.000Z"
 }

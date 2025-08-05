@@ -9,7 +9,7 @@
 ### **✅ Current Status: Phase 7 Complete - Production Ready**
 
 - **🔐 Security Framework**: Rate limiting, audit logging, input sanitization
-- **🧪 Testing Suite**: 100% endpoint coverage with comprehensive tests  
+- **🧪 Testing Suite**: 100% endpoint coverage with comprehensive tests
 - **📚 Documentation**: Complete API documentation with interactive UI
 - **🐳 Docker Deployment**: Fully containerized production setup
 - **📱 Mobile Ready**: Push notifications and device management
@@ -19,14 +19,16 @@
 ## 🚀 **Quick Start**
 
 ### **⚡ Fastest Way (Docker Desktop)**
+
 ```
 1. Open Docker Desktop
-2. Find "bidout-auction-v6" project  
+2. Find "bidout-auction-v6" project
 3. Click "Start"
 4. Open http://localhost:8000/docs
 ```
 
 ### **💻 Command Line**
+
 ```bash
 # Clone repository
 git clone git@github.com:kayprogrammer/bidout-auction-v6.git
@@ -40,6 +42,7 @@ open http://localhost:8000/docs
 ```
 
 ### **📚 Complete Documentation**
+
 **👉 [Full Documentation in /docs folder](./docs/README.md)**
 
 - **[🚀 Server Startup Guide](./docs/SERVER_STARTUP_GUIDE.md)** - Step-by-step startup instructions
@@ -52,15 +55,16 @@ open http://localhost:8000/docs
 
 ## 🌐 **Access Points**
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| **API Documentation** | http://localhost:8000/docs | Interactive Swagger UI |
-| **Health Check** | http://localhost:8000/api/v6/healthcheck | System status |
-| **Database Admin** | http://localhost:5050 | pgAdmin interface |
-| **Welcome Page** | http://localhost:8000/ | Platform information |
+| Service               | URL                                      | Description            |
+| --------------------- | ---------------------------------------- | ---------------------- |
+| **API Documentation** | http://localhost:8000/docs               | Interactive Swagger UI |
+| **Health Check**      | http://localhost:8000/api/v6/healthcheck | System status          |
+| **Database Admin**    | http://localhost:5050                    | pgAdmin interface      |
+| **Welcome Page**      | http://localhost:8000/                   | Platform information   |
 
 ### **pgAdmin Credentials**
-- **Email**: pgadmin4@pgadmin.org  
+
+- **Email**: pgadmin4@pgadmin.org
 - **Password**: admin
 
 ---
@@ -68,14 +72,16 @@ open http://localhost:8000/docs
 ## 🏗️ **Architecture & Features**
 
 ### **🎯 Core Features**
+
 - **🏃‍♂️ Real-time Bidding**: WebSocket-powered live auctions
-- **🤖 ML Recommendations**: Smart commodity suggestions  
+- **🤖 ML Recommendations**: Smart commodity suggestions
 - **🔐 Enterprise Security**: Rate limiting, audit logs, input sanitization
 - **📱 Mobile Integration**: Push notifications and device management
-- **💼 Multi-role System**: Auctioneer, bidder, and admin roles
+- **💼 Multi-role System**: Farmer, trader, and admin roles
 - **📊 Analytics Dashboard**: Performance metrics and reporting
 
 ### **🛠️ Tech Stack**
+
 - **Backend**: FastAPI, Python 3.13
 - **Database**: PostgreSQL with Alembic migrations
 - **Authentication**: JWT with refresh tokens
@@ -85,6 +91,7 @@ open http://localhost:8000/docs
 - **Documentation**: Swagger/OpenAPI
 
 ### **📁 Project Structure**
+
 ```
 bidout-auction-v6/
 ├── app/                 # Main application code
@@ -103,6 +110,7 @@ bidout-auction-v6/
 ## 🧪 **Development & Testing**
 
 ### **Local Development Setup**
+
 ```bash
 # Install dependencies
 pip install -r requirements.txt
@@ -118,6 +126,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### **Testing Suite**
+
 ```bash
 # Run all tests
 pytest --disable-warnings -vv
@@ -134,6 +143,7 @@ make test
 ## 🚀 **Deployment Options**
 
 ### **Production Docker (Recommended)**
+
 ```bash
 # Build and start all services
 docker-compose up -d
@@ -146,6 +156,7 @@ docker-compose logs -f
 ```
 
 ### **Alternative Commands**
+
 ```bash
 # Using Makefile
 make build    # Build and start
@@ -158,11 +169,13 @@ make clean    # Clean containers
 ## 📚 **Documentation Links**
 
 ### **External References**
+
 - **[FastAPI Documentation](https://fastapi.tiangolo.com/)** - Framework docs
 - **[pgAdmin Documentation](https://pgadmin.org)** - Database admin
 - **[Swagger Documentation](https://swagger.io/docs/)** - API documentation
 
 ### **Live Demo**
+
 - **[Live API Demo](https://bidout-fastapi.vercel.app/)** - Deployed platform
 
 ---
@@ -170,12 +183,14 @@ make clean    # Clean containers
 ## 📞 **Support & Contributing**
 
 ### **Getting Help**
+
 1. **Check Documentation**: Start with `/docs` folder
 2. **Review Issues**: Check GitHub issues for known problems
 3. **Health Check**: Visit http://localhost:8000/api/v6/healthcheck
 4. **Logs**: Use `docker-compose logs -f` for troubleshooting
 
 ### **Project Status**
+
 - **✅ Phase 7 Complete**: Security, testing, and documentation
 - **🐳 Production Ready**: Full Docker deployment
 - **📱 Mobile Ready**: Push notification system implemented
